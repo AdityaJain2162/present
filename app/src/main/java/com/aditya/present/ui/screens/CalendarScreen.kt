@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
 import java.util.Calendar
@@ -281,6 +282,9 @@ fun CalendarScreen(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                BannerAd()
             }
         }
     }

@@ -75,6 +75,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -256,6 +257,12 @@ fun TimetableScreen(
                                     },
                                 )
                             }
+                        }
+
+                        // AdMob banner at the bottom of Timetable
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            BannerAd()
                         }
                     }
                 }

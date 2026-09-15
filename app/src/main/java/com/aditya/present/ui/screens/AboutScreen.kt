@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aditya.present.R
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.primaryGradient
@@ -191,6 +192,9 @@ fun AboutScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // AdMob banner at the bottom of About
+            BannerAd()
         }
     }
 }

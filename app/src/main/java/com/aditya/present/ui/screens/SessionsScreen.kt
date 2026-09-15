@@ -56,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.data.AcademicSessionEntity
 import com.aditya.present.domain.SessionType
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
 import java.text.SimpleDateFormat
@@ -172,6 +173,12 @@ fun SessionsScreen(
                             },
                         )
                     }
+                }
+
+                // AdMob banner at the bottom of Sessions
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    BannerAd()
                 }
             }
         }
