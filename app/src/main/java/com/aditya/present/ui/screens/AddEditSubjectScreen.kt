@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.components.PhysicsButton
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
@@ -204,6 +205,9 @@ fun AddEditSubjectScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // AdMob banner at the bottom of Add/Edit Subject
+            BannerAd()
         }
     }
 }

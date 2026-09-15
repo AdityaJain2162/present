@@ -51,6 +51,7 @@ import java.util.Date
 import java.util.Locale
 import com.aditya.present.R
 import com.aditya.present.domain.SessionType
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalAnimationsEnabled
@@ -147,6 +148,9 @@ fun OnboardingScreen(
                 )
             }
         }
+
+            // AdMob banner at the bottom of Onboarding
+            BannerAd()
         }
     }
 }

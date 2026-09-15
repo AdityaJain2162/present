@@ -170,13 +170,10 @@ can lift it.
 - Test app ID: `ca-app-pub-3940256099942544~3347511713`
 - Test banner: `ca-app-pub-3940256099942544/6300978111`
 - `MobileAds.initialize()` in `PresentApplication.onCreate()`
-- **Allowed screens** (content viewing, bottom of scroll): Home, Calendar,
-  Timetable, Sessions, About
-- **Forbidden screens** (forms/actions/modals): Add/Edit Subject, Settings,
-  Onboarding, AttendanceMarkSheet, DayDetailSheet, CreateSessionDialog,
-  EditSessionDialog, delete-confirm dialogs
-- Banner placed as the last item in the screen's scrollable content, never
-  overlapping FABs or bottom navigation
+- **Maximum coverage** — banner on every screen: Home, Calendar, Timetable,
+  Sessions, About, Settings, Add/Edit Subject, Onboarding
+- Banner is the last item in the screen's scrollable content so it never
+  covers or pushes actionable content, FAB, or bottom navigation
 - Replace test IDs before Play Store release
 
 ---

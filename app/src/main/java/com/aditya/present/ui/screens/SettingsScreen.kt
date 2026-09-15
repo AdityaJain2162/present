@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.ThemeMode
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.AccentPresets
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -463,6 +464,9 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // AdMob banner at the bottom of Settings
+            BannerAd()
         }
     }
 }
