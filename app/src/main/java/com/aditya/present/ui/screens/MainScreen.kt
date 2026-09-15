@@ -2,6 +2,7 @@ package com.aditya.present.ui.screens
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,12 +37,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.navigation.Tab
+import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalHaptics
+import com.aditya.present.ui.theme.PillShape
 import kotlinx.coroutines.launch
 
 @Composable
@@ -57,7 +62,6 @@ fun MainScreen(
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
 
-    // Haptic feedback when page changes via swipe
     var lastPage by remember { mutableStateOf(0) }
     LaunchedEffect(pagerState.currentPage) {
         if (pagerState.currentPage != lastPage) {
@@ -68,7 +72,7 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            FluidSlidingNavBar(
+            FloatingNavBar(
                 tabs = tabs,
                 selectedTab = tabs[pagerState.currentPage],
                 onTabSelected = { tab ->
@@ -96,60 +100,71 @@ fun MainScreen(
                     Tab.SETTINGS -> SettingsScreen(onAbout = onAbout)
                 }
             }
-            // Pinned banner ad — always visible across all 4 main tabs
             BannerAd()
         }
     }
 }
 
 @Composable
-private fun FluidSlidingNavBar(
+private fun FloatingNavBar(
     tabs: List<Tab>,
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val accentPreset = LocalAccentPreset.current
+    val isDark = LocalConfiguration.current.uiMode and
+        android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+        android.content.res.Configuration.UI_MODE_NIGHT_YES
+
     val barColor = if (isDark)
-        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.85f)
+        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f)
     else
-        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.75f)
+        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.85f)
+
+    val pillGradient = Brush.horizontalGradient(
+        listOf(accentPreset.gradientStart, accentPreset.gradientEnd),
+    )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp))
+                .shadow(
+                    elevation = if (isDark) 8.dp else 6.dp,
+                    shape = PillShape,
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                )
+                .clip(PillShape)
                 .background(barColor)
-                .height(60.dp),
+                .height(64.dp),
         ) {
             val tabWidth = maxWidth / tabs.size
-            // Pill covers most of the tab width and full height minus padding
-            val pillWidth = (tabWidth - 8.dp).coerceAtLeast(48.dp)
-            val pillHeight = 44.dp
+            val pillWidth = (tabWidth - 12.dp).coerceAtLeast(52.dp)
+            val pillHeight = 48.dp
 
             val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
             val indicatorOffset by animateDpAsState(
                 targetValue = (tabWidth * selectedIndex) + ((tabWidth - pillWidth) / 2),
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessLow,
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
                 ),
                 label = "PillSlider",
             )
 
-            // Sliding pill indicator — covers full tab area
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset, y = (60.dp - pillHeight) / 2)
+                    .offset(x = indicatorOffset, y = (64.dp - pillHeight) / 2)
                     .width(pillWidth)
                     .height(pillHeight)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(pillGradient),
             )
 
             Row(
@@ -159,6 +174,15 @@ private fun FluidSlidingNavBar(
                 tabs.forEach { tab ->
                     val isSelected = selectedTab == tab
                     val haptics = LocalHaptics.current
+
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (isSelected) 1.15f else 1f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        ),
+                        label = "IconScale",
+                    )
 
                     Column(
                         modifier = Modifier
@@ -175,24 +199,24 @@ private fun FluidSlidingNavBar(
                         Icon(
                             imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
                             contentDescription = tab.label,
-                            modifier = Modifier.size(22.dp),
-                            tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .scale(iconScale),
+                            tint = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = tab.label,
                             fontSize = 11.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.SemiBold
+                            else androidx.compose.ui.text.font.FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
                     }
                 }
             }
         }
     }
-}
-
-private fun Color.luminance(): Float {
-    return 0.299f * red + 0.587f * green + 0.114f * blue
 }
