@@ -22,12 +22,14 @@ import com.aditya.present.ui.screens.MainScreen
 import com.aditya.present.ui.screens.OnboardingScreen
 import com.aditya.present.ui.screens.OnboardingViewModel
 import com.aditya.present.ui.screens.SessionsScreen
+import com.aditya.present.ui.screens.StatsScreen
 
 object Routes {
     const val ONBOARDING = "onboarding"
     const val MAIN = "main"
     const val ABOUT = "about"
     const val SESSIONS = "sessions"
+    const val STATS = "stats"
     const val ADD_SUBJECT = "add_subject/{sessionId}"
     const val EDIT_SUBJECT = "edit_subject/{sessionId}/{subjectId}"
     const val BUNK_CALCULATOR = "bunk/{subjectId}/{subjectName}/{subjectColor}/{attended}/{total}/{target}"
@@ -91,6 +93,9 @@ fun PresentNavHost(
                 onSessions = {
                     navController.navigate(Routes.SESSIONS)
                 },
+                onStats = {
+                    navController.navigate(Routes.STATS)
+                },
                 onBunkCalculator = { subjectId, name, color, attended, total, target ->
                     navController.navigate(
                         Routes.bunkCalculator(subjectId, name, color, attended, total, target)
@@ -101,6 +106,12 @@ fun PresentNavHost(
 
         composable(Routes.SESSIONS) {
             SessionsScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(Routes.STATS) {
+            StatsScreen(
                 onBack = { navController.popBackStack() },
             )
         }

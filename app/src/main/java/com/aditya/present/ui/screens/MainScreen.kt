@@ -57,6 +57,7 @@ fun MainScreen(
     onAddSubject: (Long) -> Unit,
     onAbout: () -> Unit = {},
     onSessions: () -> Unit = {},
+    onStats: () -> Unit = {},
     onBunkCalculator: (Long, String, Int, Int, Int, Float) -> Unit = { _, _, _, _, _, _ -> },
 ) {
     val tabs = Tab.entries
@@ -101,7 +102,7 @@ fun MainScreen(
                     )
                     Tab.CALENDAR -> CalendarScreen()
                     Tab.TIMETABLE -> TimetableScreen()
-                    Tab.SETTINGS -> SettingsScreen(onAbout = onAbout)
+                    Tab.SETTINGS -> SettingsScreen(onAbout = onAbout, onStats = onStats)
                 }
             }
             BannerAd()

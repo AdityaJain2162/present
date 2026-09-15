@@ -73,6 +73,7 @@ private val ALL_DAYS = listOf(
 @Composable
 fun SettingsScreen(
     onAbout: () -> Unit = {},
+    onStats: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val prefs by viewModel.themePrefs.collectAsState()
@@ -511,6 +512,39 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.import_button))
+                }
+            }
+
+            // ── Statistics ──
+            SettingsCard(title = "Statistics") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CardShape)
+                        .clickable {
+                            haptics.tap()
+                            onStats()
+                        }
+                        .padding(vertical = 8.dp),
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "View attendance statistics",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            "Overview, streaks, subject breakdown, trends",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 
