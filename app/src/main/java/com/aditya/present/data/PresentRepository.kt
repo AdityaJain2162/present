@@ -101,6 +101,10 @@ class PresentRepository @Inject constructor(
     }
 
     suspend fun importSession(session: AcademicSessionEntity): Long = dao.insertSession(session)
+
+    suspend fun updateSession(session: AcademicSessionEntity) = dao.updateSession(session)
+
+    suspend fun deleteSession(session: AcademicSessionEntity) = dao.deleteSession(session)
     suspend fun importSubject(subject: SubjectEntity): Long = dao.insertSubject(subject)
     suspend fun importSlot(slot: ClassSlotEntity): Long = dao.insertSlot(slot)
     suspend fun importAttendance(entry: AttendanceEntity): Long = dao.insertAttendance(entry)

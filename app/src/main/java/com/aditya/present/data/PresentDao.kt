@@ -18,6 +18,9 @@ interface PresentDao {
     @Update
     suspend fun updateSession(session: AcademicSessionEntity)
 
+    @Delete
+    suspend fun deleteSession(session: AcademicSessionEntity)
+
     @Query("SELECT * FROM academic_sessions ORDER BY startDate DESC")
     fun getAllSessions(): Flow<List<AcademicSessionEntity>>
 

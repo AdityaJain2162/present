@@ -63,6 +63,26 @@ class SessionsViewModel @Inject constructor(
         }
     }
 
+    fun updateSession(session: AcademicSessionEntity, name: String, type: SessionType, startDate: Long, endDate: Long, target: Float) {
+        viewModelScope.launch {
+            repository.updateSession(
+                session.copy(
+                    name = name,
+                    type = type.name,
+                    startDate = startDate,
+                    endDate = endDate,
+                    targetAttendancePercent = target,
+                )
+            )
+        }
+    }
+
+    fun deleteSession(session: AcademicSessionEntity) {
+        viewModelScope.launch {
+            repository.deleteSession(session)
+        }
+    }
+
     fun switchSession(sessionId: Long) {
         viewModelScope.launch {
             repository.setActiveSession(sessionId)

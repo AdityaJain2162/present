@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.data.AcademicSessionEntity
 import com.aditya.present.domain.SessionType
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
@@ -116,13 +119,59 @@ fun SessionsScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp, horizontal = 0.dp),
             ) {
                 items(uiState.sessions, key = { it.session.id }) { sessionWithStats ->
+                    var showEditDialog by remember { mutableStateOf(false) }
+                    var showDeleteConfirm by remember { mutableStateOf(false) }
+
                     SessionCard(
                         sessionWithStats = sessionWithStats,
                         onSwitch = {
                             haptics.confirm()
                             viewModel.switchSession(sessionWithStats.session.id)
                         },
+                        onEdit = {
+                            haptics.tap()
+                            showEditDialog = true
+                        },
+                        onDelete = {
+                            haptics.heavy()
+                            showDeleteConfirm = true
+                        },
                     )
+
+                    if (showEditDialog) {
+                        EditSessionDialog(
+                            session = sessionWithStats.session,
+                            onDismiss = { showEditDialog = false },
+                            onUpdate = { name, type, start, end, target ->
+                                viewModel.updateSession(
+                                    sessionWithStats.session,
+                                    name, type, start, end, target,
+                                )
+                                showEditDialog = false
+                            },
+                        )
+                    }
+
+                    if (showDeleteConfirm) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteConfirm = false },
+                            title = { Text("Delete Session") },
+                            text = {
+                                Text(
+                                    "Delete '${sessionWithStats.session.name}' and all its subjects, timetable, and attendance? This cannot be undone.",
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    viewModel.deleteSession(sessionWithStats.session)
+                                    showDeleteConfirm = false
+                                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -143,6 +192,8 @@ fun SessionsScreen(
 private fun SessionCard(
     sessionWithStats: SessionWithStats,
     onSwitch: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val dateFmt = remember { SimpleDateFormat("MMM yyyy", Locale.getDefault()) }
     val session = sessionWithStats.session
@@ -181,6 +232,22 @@ private fun SessionCard(
                         color = if (session.isActive)
                             MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Edit session",
+                        tint = if (session.isActive)
+                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Delete session",
+                        tint = MaterialTheme.colorScheme.error,
                     )
                 }
                 if (session.isActive) {
@@ -333,6 +400,122 @@ private fun CreateSessionDialog(
                 },
                 enabled = true,
             ) { Text(stringResource(R.string.sessions_create)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditSessionDialog(
+    session: AcademicSessionEntity,
+    onDismiss: () -> Unit,
+    onUpdate: (String, SessionType, Long, Long, Float) -> Unit,
+) {
+    val haptics = LocalHaptics.current
+    var name by remember { mutableStateOf(session.name) }
+    var sessionType by remember { mutableStateOf(runCatching { SessionType.valueOf(session.type) }.getOrDefault(SessionType.SEMESTER)) }
+    var startDate by remember { mutableStateOf(session.startDate) }
+    var endDate by remember { mutableStateOf(session.endDate) }
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+    val dateFmt = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+
+    if (showStartPicker) {
+        val state = rememberDatePickerState(initialSelectedDateMillis = startDate)
+        DatePickerDialog(
+            onDismissRequest = { showStartPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { startDate = it }
+                    showStartPicker = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartPicker = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        ) { DatePicker(state = state) }
+    }
+
+    if (showEndPicker) {
+        val state = rememberDatePickerState(initialSelectedDateMillis = endDate)
+        DatePickerDialog(
+            onDismissRequest = { showEndPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { endDate = it }
+                    showEndPicker = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEndPicker = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        ) { DatePicker(state = state) }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Session") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.sessions_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = sessionType == SessionType.SEMESTER,
+                        onClick = {
+                            haptics.tap()
+                            sessionType = SessionType.SEMESTER
+                        },
+                        label = { Text(stringResource(R.string.sessions_type_semester)) },
+                    )
+                    FilterChip(
+                        selected = sessionType == SessionType.YEARLY,
+                        onClick = {
+                            haptics.tap()
+                            sessionType = SessionType.YEARLY
+                        },
+                        label = { Text(stringResource(R.string.sessions_type_yearly)) },
+                    )
+                }
+
+                OutlinedTextField(
+                    value = dateFmt.format(Date(startDate)),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.onboarding_start_date, "")) },
+                    modifier = Modifier.fillMaxWidth().clickable { showStartPicker = true },
+                )
+
+                OutlinedTextField(
+                    value = dateFmt.format(Date(endDate)),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.onboarding_end_date, "")) },
+                    modifier = Modifier.fillMaxWidth().clickable { showEndPicker = true },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onUpdate(
+                        name.ifBlank { if (sessionType == SessionType.SEMESTER) "Semester" else "Year" },
+                        sessionType,
+                        startDate,
+                        endDate,
+                        session.targetAttendancePercent,
+                    )
+                },
+            ) { Text("Save") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
