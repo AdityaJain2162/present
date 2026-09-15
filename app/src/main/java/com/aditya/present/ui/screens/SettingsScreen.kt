@@ -87,7 +87,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             // ── Appearance ──
-            SettingsCard(title = "Appearance") {
+            SettingsCard(title = stringResource(R.string.settings_appearance)) {
                 Column(modifier = Modifier.selectableGroup()) {
                     ThemeMode.entries.forEach { mode ->
                         Row(
@@ -114,7 +114,7 @@ fun SettingsScreen(
             }
 
             // ── Accent Color ──
-            SettingsCard(title = "Accent Color") {
+            SettingsCard(title = stringResource(R.string.settings_accent_color_title)) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(AccentPresets) { preset ->
                         AccentSwatch(
@@ -130,9 +130,9 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Dynamic color", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.settings_dynamic_color_short), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "Android 12+ — blends with wallpaper",
+                            stringResource(R.string.settings_dynamic_color_short_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -148,10 +148,10 @@ fun SettingsScreen(
             }
 
             // ── Behavior ──
-            SettingsCard(title = "Behavior") {
+            SettingsCard(title = stringResource(R.string.settings_behavior)) {
                 ToggleRow(
-                    title = "Smooth animations",
-                    subtitle = "Transitions, spring motion, staggered lists",
+                    title = stringResource(R.string.settings_smooth_animations),
+                    subtitle = stringResource(R.string.settings_smooth_animations_desc),
                     checked = prefs.animationsEnabled,
                     onCheckedChange = {
                         haptics.confirm()
@@ -160,8 +160,8 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 ToggleRow(
-                    title = "Haptic feedback",
-                    subtitle = "Vibration on button presses and marking",
+                    title = stringResource(R.string.settings_haptic_feedback),
+                    subtitle = stringResource(R.string.settings_haptic_feedback_desc),
                     checked = prefs.hapticFeedback,
                     onCheckedChange = {
                         if (it) haptics.confirm()
@@ -171,9 +171,9 @@ fun SettingsScreen(
             }
 
             // ── Attendance Defaults ──
-            SettingsCard(title = "Attendance Defaults") {
+            SettingsCard(title = stringResource(R.string.settings_attendance_defaults)) {
                 Text(
-                    "Default target: ${prefs.defaultTargetPercent}%",
+                    stringResource(R.string.settings_default_target, prefs.defaultTargetPercent),
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Slider(
@@ -184,11 +184,11 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "Auto-mark time: ${prefs.autoMarkHour}:00",
+                    stringResource(R.string.settings_auto_mark_time, prefs.autoMarkHour),
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    "Unmarked classes auto-mark as Present at this hour",
+                    stringResource(R.string.settings_auto_mark_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -201,9 +201,9 @@ fun SettingsScreen(
             }
 
             // ── Weekend Config ──
-            SettingsCard(title = "Weekend Days") {
+            SettingsCard(title = stringResource(R.string.settings_weekend_days)) {
                 Text(
-                    "These days are auto-excluded from attendance",
+                    stringResource(R.string.settings_weekend_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -320,11 +320,11 @@ fun SettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Haptic Feedback",
+                                stringResource(R.string.settings_haptic_feedback),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                             Text(
-                                "Vibrate on taps and actions",
+                                stringResource(R.string.settings_haptic_feedback_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -343,11 +343,11 @@ fun SettingsScreen(
                         HorizontalDivider()
                         Column {
                             Text(
-                                "Haptic Intensity",
+                                stringResource(R.string.settings_haptic_intensity),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                             Text(
-                                "How strong the vibration feels",
+                                stringResource(R.string.settings_haptic_intensity_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -389,7 +389,7 @@ fun SettingsScreen(
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
-                            "Developer info, links, privacy, license",
+                            stringResource(R.string.settings_about_desc_full),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

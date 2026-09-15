@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -74,6 +75,7 @@ import java.util.Locale
 fun HomeScreen(
     onAddSubject: (Long) -> Unit,
     onSubjectClick: (Long) -> Unit,
+    onManageSessions: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -81,6 +83,7 @@ fun HomeScreen(
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
     val haptics = LocalHaptics.current
+    val context = LocalContext.current
     val snackbarHost = remember { SnackbarHostState() }
 
     var markingSubject by remember { mutableStateOf<SubjectWithAttendance?>(null) }
@@ -91,15 +94,15 @@ fun HomeScreen(
     androidx.compose.runtime.LaunchedEffect(lastMarked, lastStatus) {
         if (lastMarked != null && lastStatus != null) {
             val statusText = when (lastStatus) {
-                AttendanceStatus.PRESENT -> "Present"
-                AttendanceStatus.ABSENT -> "Absent"
-                AttendanceStatus.CANCELLED -> "Cancelled"
-                AttendanceStatus.HOLIDAY -> "Holiday"
-                AttendanceStatus.ON_DUTY -> "On Duty"
+                AttendanceStatus.PRESENT -> context.getString(R.string.status_present)
+                AttendanceStatus.ABSENT -> context.getString(R.string.status_absent)
+                AttendanceStatus.CANCELLED -> context.getString(R.string.status_cancelled)
+                AttendanceStatus.HOLIDAY -> context.getString(R.string.status_holiday)
+                AttendanceStatus.ON_DUTY -> context.getString(R.string.status_on_duty)
             }
             val result = snackbarHost.showSnackbar(
-                message = "$lastMarked marked $statusText",
-                actionLabel = "UNDO",
+                message = context.getString(R.string.home_marked_status, lastMarked, statusText),
+                actionLabel = context.getString(R.string.home_undo),
                 withDismissAction = true,
             )
             if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
@@ -127,14 +130,14 @@ fun HomeScreen(
                                 )
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = uiState.activeSession?.name ?: "No session",
+                                        text = uiState.activeSession?.name ?: stringResource(R.string.home_no_session),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     if (uiState.allSessions.size > 1) {
                                         Icon(
                                             imageVector = Icons.Filled.ArrowDropDown,
-                                            contentDescription = "Switch session",
+                                            contentDescription = stringResource(R.string.home_switch_session),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
@@ -149,7 +152,7 @@ fun HomeScreen(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = session.name + if (session.isActive) " (active)" else "",
+                                            text = if (session.isActive) stringResource(R.string.home_active_session, session.name) else session.name,
                                             fontWeight = if (session.isActive) FontWeight.Bold else FontWeight.Normal,
                                         )
                                     },
@@ -160,6 +163,32 @@ fun HomeScreen(
                                     },
                                 )
                             }
+                            if (uiState.allSessions.isNotEmpty()) {
+                                androidx.compose.material3.HorizontalDivider()
+                            }
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Add,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.sessions_manage),
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontWeight = FontWeight.Medium,
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    haptics.tap()
+                                    menuExpanded = false
+                                    onManageSessions()
+                                },
+                            )
                         }
                     }
                 }
@@ -173,7 +202,7 @@ fun HomeScreen(
                 },
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text(stringResource(R.string.add_subject)) },
-                modifier = Modifier.semantics { contentDescription = "Add subject" }
+                modifier = Modifier.semantics { contentDescription = context.getString(R.string.home_add_subject_cd) }
             )
         }
     ) { padding ->
@@ -189,8 +218,8 @@ fun HomeScreen(
             uiState.subjects.isEmpty() -> {
                 EmptyState(
                     icon = Icons.Filled.Add,
-                    title = "Welcome to Present!",
-                    subtitle = "Add your first subject to start tracking attendance and never worry about falling below your target again.",
+                    title = stringResource(R.string.home_welcome_title),
+                    subtitle = stringResource(R.string.home_welcome_subtitle),
                     modifier = Modifier.fillMaxSize().padding(padding),
                     action = {
                         TextButton(
@@ -202,7 +231,7 @@ fun HomeScreen(
                         ) {
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(modifier = Modifier.size(8.dp))
-                            Text("Add Your First Subject", fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.home_add_first_subject), fontWeight = FontWeight.Medium)
                         }
                     },
                 )
@@ -284,9 +313,9 @@ private fun OverallAttendanceCard(
     val overallPct = if (totalTotal > 0) (totalAttended * 100 / totalTotal) else 0
 
     val periodLabel = when (selectedPeriod) {
-        1 -> "This Month"
-        2 -> "This Week"
-        else -> "Overall"
+        1 -> stringResource(R.string.home_period_this_month)
+        2 -> stringResource(R.string.home_period_this_week)
+        else -> stringResource(R.string.home_period_label_overall)
     }
 
     Box(
@@ -298,7 +327,7 @@ private fun OverallAttendanceCard(
     ) {
         Column {
             Text(
-                text = sessionName.ifBlank { "Overall" },
+                text = sessionName.ifBlank { stringResource(R.string.home_period_label_overall) },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
             )
@@ -306,7 +335,11 @@ private fun OverallAttendanceCard(
 
             // Period selector chips
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("Overall", "Monthly", "Weekly").forEachIndexed { index, label ->
+                listOf(
+                    stringResource(R.string.home_period_overall),
+                    stringResource(R.string.home_period_monthly),
+                    stringResource(R.string.home_period_weekly),
+                ).forEachIndexed { index, label ->
                     FilterChip(
                         selected = selectedPeriod == index,
                         onClick = {
@@ -324,7 +357,7 @@ private fun OverallAttendanceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "$periodLabel: $overallPct%",
+                text = stringResource(R.string.home_period_label, periodLabel, overallPct),
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -342,7 +375,11 @@ private fun OverallAttendanceCard(
 
             val subjectCount = subjects.size
             Text(
-                text = "$subjectCount ${if (subjectCount == 1) "subject" else "subjects"} • Tap a subject to mark attendance",
+                text = stringResource(
+                    if (subjectCount == 1) R.string.home_subject_count
+                    else R.string.home_subject_count_plural,
+                    subjectCount,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
             )
