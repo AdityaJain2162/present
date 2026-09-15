@@ -1,7 +1,9 @@
 package com.aditya.present.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aditya.present.data.SubjectEntity
+import com.aditya.present.domain.AttendanceStatus
 
 @Composable
 fun SubjectCard(
@@ -44,15 +52,18 @@ fun SubjectCard(
     percentage: Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    todayStatus: AttendanceStatus? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val targetPct = subject.targetAttendancePercent / 100f
+    val isSafe = percentage >= targetPct
 
     Card(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .animateContentSize()
-            .semantics { contentDescription = "Subject ${subject.name}" },
+            .semantics { contentDescription = "Subject ${subject.name}. ${if (todayStatus != null) "Marked ${todayStatus.name.lowercase()} today" else "Not marked today"}. Tap to mark attendance" },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
@@ -63,15 +74,19 @@ fun SubjectCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    // Color dot
+                    Box(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(CircleShape)
-                            .animateContentSize()
+                            .background(Color(subject.color)),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = subject.name,
                             style = MaterialTheme.typography.titleMedium,
@@ -80,7 +95,7 @@ fun SubjectCard(
                         Text(
                             text = buildString {
                                 append(subject.acronym)
-                                append(" • ${attendedUnits}/${totalUnits} units")
+                                append(" • $attendedUnits/$totalUnits classes")
                                 if (subject.teacherName.isNotBlank()) {
                                     append(" • ${subject.teacherName}")
                                 }
@@ -91,14 +106,17 @@ fun SubjectCard(
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Today's status badge
+                    if (todayStatus != null) {
+                        StatusBadge(status = todayStatus)
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     Text(
                         text = "${(percentage * 100).toInt()}%",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (percentage >= subject.targetAttendancePercent / 100f)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.error,
+                        color = if (isSafe) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.error,
                     )
                     IconButton(onClick = { expanded = !expanded }) {
                         Icon(
@@ -113,10 +131,8 @@ fun SubjectCard(
             LinearProgressIndicator(
                 progress = { percentage.coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = if (percentage >= subject.targetAttendancePercent / 100f)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.error,
+                color = if (isSafe) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.error,
             )
             if (expanded) {
                 Spacer(modifier = Modifier.height(12.dp))
@@ -126,11 +142,63 @@ fun SubjectCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "Attended: $attendedUnits / $totalUnits units",
+                    text = "Attended: $attendedUnits / $totalUnits classes",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (totalUnits > 0) {
+                    val classesToSkip = BunkCalculatorHelper.classesCanBunk(
+                        attended = attendedUnits,
+                        total = totalUnits,
+                        target = subject.targetAttendancePercent / 100f,
+                    )
+                    val classesToAttend = BunkCalculatorHelper.classesToAttend(
+                        attended = attendedUnits,
+                        total = totalUnits,
+                        target = subject.targetAttendancePercent / 100f,
+                    )
+                    if (classesToSkip > 0) {
+                        Text(
+                            text = "Can safely skip $classesToSkip more classes",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    } else if (classesToAttend > 0) {
+                        Text(
+                            text = "Attend next $classesToAttend classes to reach target",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun StatusBadge(status: AttendanceStatus) {
+    val (color, icon) = when (status) {
+        AttendanceStatus.PRESENT -> Color(0xFF4CAF50) to Icons.Filled.Check
+        AttendanceStatus.ABSENT -> Color(0xFFEF4444) to Icons.Filled.Close
+        AttendanceStatus.CANCELLED -> Color(0xFFFF9800) to Icons.Filled.EventBusy
+        AttendanceStatus.HOLIDAY -> Color(0xFF9E9E9E) to Icons.Filled.EventBusy
+        AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary to Icons.Filled.Work
+    }
+    Box(
+        modifier = Modifier
+            .size(24.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = status.name,
+            tint = color,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }

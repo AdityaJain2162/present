@@ -75,6 +75,12 @@ class PresentRepository @Inject constructor(
     suspend fun updateSubject(subject: SubjectEntity) = dao.updateSubject(subject)
     suspend fun deleteSubject(subject: SubjectEntity) = dao.deleteSubject(subject)
 
+    // Class slots
+    fun getSlotsForDay(dayOfWeek: Int): Flow<List<ClassSlotEntity>> = dao.getSlotsForDay(dayOfWeek)
+
+    suspend fun insertSlot(subjectId: Long, dayOfWeek: Int, startTimeMinutes: Int, units: Int): Long =
+        dao.insertSlot(ClassSlotEntity(subjectId = subjectId, dayOfWeek = dayOfWeek, startTimeMinutes = startTimeMinutes, units = units))
+
     // Attendance
     fun getAttendanceForSubject(subjectId: Long): Flow<List<AttendanceEntity>> =
         dao.getAttendanceForSubject(subjectId)

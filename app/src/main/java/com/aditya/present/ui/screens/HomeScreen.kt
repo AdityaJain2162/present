@@ -15,13 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,6 +32,8 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -54,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.ui.components.AttendanceMarkSheet
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
@@ -61,6 +65,9 @@ import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalAnimationsEnabled
 import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.primaryGradient
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,14 +80,42 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
+    val haptics = LocalHaptics.current
+    val snackbarHost = remember { SnackbarHostState() }
+
+    var markingSubject by remember { mutableStateOf<SubjectWithAttendance?>(null) }
+
+    // Show snackbar when attendance is marked
+    val lastMarked = uiState.lastMarkedSubject
+    val lastStatus = uiState.lastMarkedStatus
+    androidx.compose.runtime.LaunchedEffect(lastMarked, lastStatus) {
+        if (lastMarked != null && lastStatus != null) {
+            val statusText = when (lastStatus) {
+                AttendanceStatus.PRESENT -> "Present"
+                AttendanceStatus.ABSENT -> "Absent"
+                AttendanceStatus.CANCELLED -> "Cancelled"
+                AttendanceStatus.HOLIDAY -> "Holiday"
+                AttendanceStatus.ON_DUTY -> "On Duty"
+            }
+            val result = snackbarHost.showSnackbar(
+                message = "$lastMarked marked $statusText",
+                actionLabel = "UNDO",
+                withDismissAction = true,
+            )
+            if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                // TODO: implement undo (delete last entry)
+            }
+            viewModel.clearLastMarked()
+        }
+    }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
             TopAppBar(
                 title = {
                     var menuExpanded by remember { mutableStateOf(false) }
-                    val haptics = LocalHaptics.current
 
                     Box {
                         TextButton(onClick = { menuExpanded = true }) {
@@ -132,7 +167,10 @@ fun HomeScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = onAddSubject,
+                onClick = {
+                    haptics.tap()
+                    onAddSubject()
+                },
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text(stringResource(R.string.add_subject)) },
                 modifier = Modifier.semantics { contentDescription = "Add subject" }
@@ -155,7 +193,13 @@ fun HomeScreen(
                     subtitle = "Add your first subject to start tracking attendance and never worry about falling below your target again.",
                     modifier = Modifier.fillMaxSize().padding(padding),
                     action = {
-                        Button(onClick = onAddSubject, modifier = Modifier.fillMaxWidth()) {
+                        TextButton(
+                            onClick = {
+                                haptics.tap()
+                                onAddSubject()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(modifier = Modifier.size(8.dp))
                             Text("Add Your First Subject", fontWeight = FontWeight.Medium)
@@ -174,7 +218,7 @@ fun HomeScreen(
                     // Gradient header card with attendance + period selector
                     item {
                         OverallAttendanceCard(
-                            subjectCount = uiState.subjects.size,
+                            subjects = uiState.subjects,
                             sessionName = uiState.activeSession?.name ?: "",
                             sessionStart = uiState.activeSession?.startDate ?: 0L,
                             sessionEnd = uiState.activeSession?.endDate ?: 0L,
@@ -182,7 +226,7 @@ fun HomeScreen(
                     }
 
                     // Subject list with staggered animation
-                    itemsIndexed(uiState.subjects, key = { _, s -> s.id }) { index, subject ->
+                    itemsIndexed(uiState.subjects, key = { _, s -> s.subject.id }) { index, subjectWithAtt ->
                         val delayMs = if (animations) index * 40 else 0
                         AnimatedVisibility(
                             visible = true,
@@ -190,11 +234,15 @@ fun HomeScreen(
                                 slideInVertically(tween(300, delayMillis = delayMs)) { it / 4 },
                         ) {
                             SubjectCard(
-                                subject = subject,
-                                attendedUnits = 0,
-                                totalUnits = 0,
-                                percentage = 0f,
-                                onClick = { onSubjectClick(subject.id) },
+                                subject = subjectWithAtt.subject,
+                                attendedUnits = subjectWithAtt.attendedUnits,
+                                totalUnits = subjectWithAtt.totalUnits,
+                                percentage = subjectWithAtt.percentage,
+                                todayStatus = subjectWithAtt.todayStatus,
+                                onClick = {
+                                    haptics.tap()
+                                    markingSubject = subjectWithAtt
+                                },
                             )
                         }
                     }
@@ -202,19 +250,38 @@ fun HomeScreen(
             }
         }
     }
+
+    // Attendance marking bottom sheet
+    markingSubject?.let { subject ->
+        AttendanceMarkSheet(
+            subjectName = subject.subject.name,
+            subjectColor = subject.subject.color,
+            teacherName = subject.subject.teacherName,
+            onMark = { status ->
+                viewModel.markAttendance(subject.subject.id, status, subject.subject.name)
+                markingSubject = null
+            },
+            onDismiss = { markingSubject = null },
+        )
+    }
 }
 
 @Composable
 private fun OverallAttendanceCard(
-    subjectCount: Int,
+    subjects: List<SubjectWithAttendance>,
     sessionName: String,
     sessionStart: Long,
     sessionEnd: Long,
 ) {
     val accentPreset = LocalAccentPreset.current
-    val dateFormat = remember { java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault()) }
-    var selectedPeriod by remember { mutableStateOf(0) } // 0=Overall, 1=Monthly, 2=Weekly
-    val haptics = com.aditya.present.ui.theme.LocalHaptics.current
+    val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+    var selectedPeriod by remember { mutableStateOf(0) }
+    val haptics = LocalHaptics.current
+
+    // Compute overall attendance
+    val totalAttended = subjects.sumOf { it.attendedUnits }
+    val totalTotal = subjects.sumOf { it.totalUnits }
+    val overallPct = if (totalTotal > 0) (totalAttended * 100 / totalTotal) else 0
 
     val periodLabel = when (selectedPeriod) {
         1 -> "This Month"
@@ -240,14 +307,14 @@ private fun OverallAttendanceCard(
             // Period selector chips
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Overall", "Monthly", "Weekly").forEachIndexed { index, label ->
-                    androidx.compose.material3.FilterChip(
+                    FilterChip(
                         selected = selectedPeriod == index,
                         onClick = {
                             haptics.tap()
                             selectedPeriod = index
                         },
                         label = { Text(label, fontSize = 12.sp) },
-                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                        colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                         ),
@@ -257,7 +324,7 @@ private fun OverallAttendanceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "$periodLabel: --%",
+                text = "$periodLabel: $overallPct%",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -266,13 +333,14 @@ private fun OverallAttendanceCard(
 
             if (sessionStart > 0 && sessionEnd > 0) {
                 Text(
-                    text = "${dateFormat.format(java.util.Date(sessionStart))} — ${dateFormat.format(java.util.Date(sessionEnd))}",
+                    text = "${dateFormat.format(Date(sessionStart))} — ${dateFormat.format(Date(sessionEnd))}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
+            val subjectCount = subjects.size
             Text(
                 text = "$subjectCount ${if (subjectCount == 1) "subject" else "subjects"} • Tap a subject to mark attendance",
                 style = MaterialTheme.typography.bodySmall,
@@ -281,5 +349,3 @@ private fun OverallAttendanceCard(
         }
     }
 }
-
-
