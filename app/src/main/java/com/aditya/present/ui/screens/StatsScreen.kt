@@ -37,8 +37,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -145,6 +149,7 @@ fun StatsScreen(
                 TrendChart(
                     data = uiState.trendData,
                     color = accentPreset.gradientStart,
+                    targetPercent = uiState.activeSession?.targetAttendancePercent ?: 75f,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
@@ -225,6 +230,7 @@ private fun StatRow(label: String, value: String, percentage: String) {
 private fun TrendChart(
     data: List<Float>,
     color: Color,
+    targetPercent: Float = 75f,
     modifier: Modifier = Modifier,
 ) {
     if (data.isEmpty()) {
@@ -241,27 +247,63 @@ private fun TrendChart(
         return
     }
 
-    Canvas(modifier = modifier) {
-        if (data.size < 2) return@Canvas
+    if (data.size < 2) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.stats_insufficient_data),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        return
+    }
 
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val targetColor = Color(0xFFEF4444).copy(alpha = 0.6f)
+
+    Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
-        val padding = 10f
-        val chartWidth = width - 2 * padding
+        val padding = 36f
+        val chartWidth = width - padding - 10f
         val chartHeight = height - 2 * padding
 
         val stepX = chartWidth / (data.size - 1)
 
-        // Draw grid lines at 25%, 50%, 75%, 100%
+        // Draw grid lines with labels at 25%, 50%, 75%, 100%
         for (pct in listOf(0.25f, 0.5f, 0.75f, 1f)) {
             val y = padding + chartHeight * (1 - pct)
             drawLine(
                 color = Color.Gray.copy(alpha = 0.2f),
                 start = Offset(padding, y),
-                end = Offset(width - padding, y),
+                end = Offset(width - 10f, y),
                 strokeWidth = 1f,
             )
+            drawIntoCanvas {
+                it.nativeCanvas.drawText(
+                    "${(pct * 100).toInt()}%",
+                    4f,
+                    y + 8f,
+                    android.graphics.Paint().apply {
+                        this.color = labelColor.toArgb()
+                        textSize = 20f
+                    },
+                )
+            }
         }
+
+        // Draw target line
+        val targetY = padding + chartHeight * (1 - targetPercent / 100f)
+        drawLine(
+            color = targetColor,
+            start = Offset(padding, targetY),
+            end = Offset(width - 10f, targetY),
+            strokeWidth = 2f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f)),
+        )
 
         // Draw the line path
         val path = Path()

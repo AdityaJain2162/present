@@ -35,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -308,6 +309,7 @@ private fun CreateSessionDialog(
     var sessionType by remember { mutableStateOf(SessionType.SEMESTER) }
     var startDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var endDate by remember { mutableStateOf(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 180) }
+    var targetAttendance by remember { mutableStateOf(75f) }
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
     val dateFmt = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
@@ -393,6 +395,18 @@ private fun CreateSessionDialog(
                     label = { Text(stringResource(R.string.onboarding_end_date, "")) },
                     modifier = Modifier.fillMaxWidth().clickable { showEndPicker = true },
                 )
+
+                Text(
+                    text = stringResource(R.string.onboarding_target_label, targetAttendance.toInt()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Slider(
+                    value = targetAttendance,
+                    onValueChange = { targetAttendance = it },
+                    valueRange = 50f..100f,
+                    steps = 9,
+                )
             }
         },
         confirmButton = {
@@ -405,10 +419,10 @@ private fun CreateSessionDialog(
                         sessionType,
                         startDate,
                         endDate,
-                        75f,
+                        targetAttendance,
                     )
                 },
-                enabled = true,
+                enabled = endDate > startDate,
             ) { Text(stringResource(R.string.sessions_create)) }
         },
         dismissButton = {
@@ -429,6 +443,7 @@ private fun EditSessionDialog(
     var sessionType by remember { mutableStateOf(runCatching { SessionType.valueOf(session.type) }.getOrDefault(SessionType.SEMESTER)) }
     var startDate by remember { mutableStateOf(session.startDate) }
     var endDate by remember { mutableStateOf(session.endDate) }
+    var targetAttendance by remember { mutableStateOf(session.targetAttendancePercent) }
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
     val dateFmt = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
@@ -514,6 +529,18 @@ private fun EditSessionDialog(
                     label = { Text(stringResource(R.string.onboarding_end_date, "")) },
                     modifier = Modifier.fillMaxWidth().clickable { showEndPicker = true },
                 )
+
+                Text(
+                    text = stringResource(R.string.onboarding_target_label, targetAttendance.toInt()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Slider(
+                    value = targetAttendance,
+                    onValueChange = { targetAttendance = it },
+                    valueRange = 50f..100f,
+                    steps = 9,
+                )
             }
         },
         confirmButton = {
@@ -526,9 +553,10 @@ private fun EditSessionDialog(
                         sessionType,
                         startDate,
                         endDate,
-                        session.targetAttendancePercent,
+                        targetAttendance,
                     )
                 },
+                enabled = endDate > startDate,
             ) { Text(stringResource(R.string.save_subject)) }
         },
         dismissButton = {

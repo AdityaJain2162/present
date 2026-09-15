@@ -64,6 +64,7 @@
     <string name="onboarding_start_date">Start: %1$s</string>
     <string name="onboarding_end_date">End: %1$s</string>
     <string name="onboarding_target_hint">Target attendance: 75%%\n(You can change these later in Settings)</string>
+    <string name="onboarding_target_label">Target attendance: %1$d%%</string>
     <string name="onboarding_create_semester">Create Semester</string>
     <string name="onboarding_create_year">Create Year</string>
     <string name="ok">OK</string>
@@ -261,6 +262,7 @@
     <string name="stats_subject_breakdown">Subject Breakdown</string>
     <string name="stats_trend_title">14-Day Attendance Trend</string>
     <string name="stats_no_data">No data yet</string>
+    <string name="stats_insufficient_data">Not enough data to show trend</string>
     <string name="stats_days">%1$d days</string>
 
     <!-- Bunk Calculator -->

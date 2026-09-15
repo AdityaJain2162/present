@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -351,9 +352,11 @@ private fun SessionDetailsStep(
     sessionName: String,
     startDate: Long,
     endDate: Long,
+    targetAttendance: Float,
     onNameChange: (String) -> Unit,
     onStartDateChange: (Long) -> Unit,
     onEndDateChange: (Long) -> Unit,
+    onTargetChange: (Float) -> Unit,
     onCreate: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -451,14 +454,28 @@ private fun SessionDetailsStep(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Target attendance slider
         Text(
-            text = stringResource(R.string.onboarding_target_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+            text = stringResource(R.string.onboarding_target_label, targetAttendance.toInt()),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
         )
-        Spacer(modifier = Modifier.height(36.dp))
-        Button(onClick = onCreate, modifier = Modifier.fillMaxWidth()) {
+        Slider(
+            value = targetAttendance,
+            onValueChange = { onTargetChange(it) },
+            valueRange = 50f..100f,
+            steps = 9,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        val datesValid = endDate > startDate
+        Button(
+            onClick = onCreate,
+            enabled = datesValid,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             Text(
                 stringResource(
                     if (sessionType == SessionType.SEMESTER) R.string.onboarding_create_semester
