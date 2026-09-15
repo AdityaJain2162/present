@@ -147,20 +147,20 @@ private fun WelcomeStep(onContinue: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Every class counts.",
+            text = stringResource(R.string.onboarding_tagline),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(modifier = Modifier.height(48.dp))
         Text(
-            text = "Track attendance, calculate safe bunks, manage your timetable, and never miss a deadline — all offline, no account needed.",
+            text = stringResource(R.string.onboarding_description),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(48.dp))
         Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
-            Text("Get Started", fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.onboarding_get_started), fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -176,7 +176,7 @@ private fun SessionTypeStep(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "How do you track attendance?",
+            text = stringResource(R.string.onboarding_track_question),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -197,14 +197,14 @@ private fun SessionTypeStep(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "College / Semester",
+                    text = stringResource(R.string.onboarding_college_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Track attendance semester-wise with CGPA support",
+                    text = stringResource(R.string.onboarding_college_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     textAlign = TextAlign.Center,
@@ -227,14 +227,14 @@ private fun SessionTypeStep(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "School / Yearly",
+                    text = stringResource(R.string.onboarding_school_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Track attendance for the full academic year",
+                    text = stringResource(R.string.onboarding_school_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     textAlign = TextAlign.Center,
@@ -243,7 +243,7 @@ private fun SessionTypeStep(
         }
         Spacer(modifier = Modifier.height(36.dp))
         OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("Back")
+            Text(stringResource(R.string.back))
         }
     }
 }
@@ -275,10 +275,10 @@ private fun SessionDetailsStep(
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { onStartDateChange(it) }
                     showStartPicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStartPicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showStartPicker = false }) { Text(stringResource(R.string.cancel)) }
             },
         ) { DatePicker(state = state) }
     }
@@ -291,10 +291,10 @@ private fun SessionDetailsStep(
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { onEndDateChange(it) }
                     showEndPicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndPicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showEndPicker = false }) { Text(stringResource(R.string.cancel)) }
             },
         ) { DatePicker(state = state) }
     }
@@ -305,7 +305,10 @@ private fun SessionDetailsStep(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "Name your $typeLabel",
+            text = stringResource(
+                if (sessionType == SessionType.SEMESTER) R.string.onboarding_name_semester
+                else R.string.onboarding_name_year
+            ),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
@@ -313,7 +316,14 @@ private fun SessionDetailsStep(
         OutlinedTextField(
             value = sessionName,
             onValueChange = onNameChange,
-            label = { Text("$typeLabel name") },
+            label = {
+                Text(
+                    stringResource(
+                        if (sessionType == SessionType.SEMESTER) R.string.onboarding_semester_name
+                        else R.string.onboarding_year_name
+                    )
+                )
+            },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -325,7 +335,7 @@ private fun SessionDetailsStep(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                "Start: ${dateFormat.format(Date(startDate))}",
+                stringResource(R.string.onboarding_start_date, dateFormat.format(Date(startDate))),
                 modifier = Modifier.weight(1f),
             )
         }
@@ -337,24 +347,30 @@ private fun SessionDetailsStep(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                "End: ${dateFormat.format(Date(endDate))}",
+                stringResource(R.string.onboarding_end_date, dateFormat.format(Date(endDate))),
                 modifier = Modifier.weight(1f),
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Target attendance: 75%\n(You can change these later in Settings)",
+            text = stringResource(R.string.onboarding_target_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(36.dp))
         Button(onClick = onCreate, modifier = Modifier.fillMaxWidth()) {
-            Text("Create $typeLabel", fontWeight = FontWeight.Medium)
+            Text(
+                stringResource(
+                    if (sessionType == SessionType.SEMESTER) R.string.onboarding_create_semester
+                    else R.string.onboarding_create_year
+                ),
+                fontWeight = FontWeight.Medium,
+            )
         }
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("Back")
+            Text(stringResource(R.string.back))
         }
     }
 }
