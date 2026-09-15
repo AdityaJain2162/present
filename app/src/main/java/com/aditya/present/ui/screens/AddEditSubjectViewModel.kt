@@ -78,6 +78,8 @@ class AddEditSubjectViewModel @Inject constructor(
     fun save(sessionId: Long, existingId: Long? = null) {
         val state = _uiState.value
         if (state.name.isBlank()) return
+        // In edit mode, wait for the subject to load before saving
+        if (existingId != null && !state.isEdit) return
 
         viewModelScope.launch {
             if (existingId != null && state.isEdit) {

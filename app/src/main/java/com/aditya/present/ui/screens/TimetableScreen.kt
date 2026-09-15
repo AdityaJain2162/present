@@ -115,11 +115,14 @@ fun TimetableScreen(
                 AttendanceStatus.HOLIDAY -> context.getString(R.string.status_holiday)
                 AttendanceStatus.ON_DUTY -> context.getString(R.string.status_on_duty)
             }
-            snackbarHost.showSnackbar(
+            val result = snackbarHost.showSnackbar(
                 message = context.getString(R.string.home_marked_status, name, statusText),
                 actionLabel = context.getString(R.string.home_undo),
                 withDismissAction = true,
             )
+            if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                viewModel.undoLastMarked()
+            }
             lastMarked = null
         }
     }
@@ -323,7 +326,7 @@ private fun SwipeableTimetableCard(
     val hour = startTimeMinutes / 60
     val minute = startTimeMinutes % 60
     val endTimeMinutes = startTimeMinutes + units * 60
-    val endHour = endTimeMinutes / 60
+    val endHour = (endTimeMinutes / 60) % 24
     val endMinute = endTimeMinutes % 60
     val timeText = String.format("%02d:%02d - %02d:%02d", hour, minute, endHour, endMinute)
 

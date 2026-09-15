@@ -1,0 +1,110 @@
+Present App — Bug Audit (2026-09-15)
+====================================
+
+CRITICAL
+--------
+#1  BunkCalculator.recoveryNeeded formula wrong
+    File: domain/BunkCalculator.kt:27-30
+    Code:  (target * (totalUnits + remainingClasses) - attendedUnits) / (1 - target)
+    Should: (target * totalUnits - attendedUnits) / (1 - target)  per AGENTS.md
+    Effect: Overestimates recovery by 4x
+
+#2  Class reminder alarms are one-shot, never recurring
+    File: util/AlarmScheduler.kt:53-57
+    Effect: Weekly class gets ONE reminder then never again
+
+HIGH
+----
+#3  Two conflicting bunk calculator implementations
+    Files: domain/BunkCalculator.kt vs ui/components/BunkCalculatorHelper.kt
+    Effect: Inconsistent recovery numbers on same screen
+
+#4  BunkCalculator.isBeyondSaving too narrow
+    File: domain/BunkCalculator.kt:32
+    Code:  remainingClasses == 0
+    Should: also check if remaining classes can lift to target
+
+#5  Dual Room database instances break Flow reactivity
+    File: data/PresentDatabase.kt:31-39 vs 49-52
+    Effect: UI won't update when background receivers modify data
+
+#6  fallbackToDestructiveMigration destroys all user data
+    File: data/PresentDatabase.kt:37,51
+    Effect: Any schema change silently deletes all data
+
+#7  CSV import clears all data before validating
+    File: util/ExportUtil.kt:206
+    Effect: Data loss on import failure (no transaction rollback)
+
+#8  BootReceiver only reschedules today's class reminders
+    File: service/BootReceiver.kt:36-46
+    Effect: After reboot, future days' reminders never scheduled
+
+#9  TimetableViewModel todayStatus doesn't filter by slotId
+    File: ui/screens/TimetableViewModel.kt:82-95
+    Effect: Multiple slots of same subject show first slot's status
+
+#10 HomeViewModel undo only deletes the last slot
+    File: ui/screens/HomeViewModel.kt:191-201
+    Effect: Multi-slot subjects can't be fully undone
+
+#11 Subject name in BunkCalculator route not URL-encoded
+    File: ui/navigation/NavGraph.kt:46
+    Effect: Names with /, ?, #, spaces break navigation
+
+MEDIUM
+------
+#12 NotificationActionReceiver hardcodes units=1
+    File: service/NotificationActionReceiver.kt:48
+    Effect: Multi-unit classes marked as 1 unit via notification
+
+#13 Changing auto-mark hour doesn't reschedule alarm
+    File: ui/screens/SettingsViewModel.kt:72-74
+    Effect: Alarm fires at old hour until next day
+
+#14 Toggling class notifications doesn't schedule/cancel alarms
+    File: ui/screens/SettingsViewModel.kt:92-94
+    Effect: Stale alarms remain / new alarms not scheduled
+
+#15 TimetableViewModel.markAttendance uses current time not selected day
+    File: ui/screens/TimetableViewModel.kt:189
+    Effect: Marking tomorrow's slot records as today
+
+#16 CalendarScreen day status shows best status not worst
+    File: ui/screens/CalendarScreen.kt:199-201
+    Code:  minByOrNull { it.ordinal }  (PRESENT=0 wins)
+    Should: maxByOrNull { it.ordinal } for worst status
+
+#17 CalendarScreen bottom sheet persists across month changes
+    File: ui/screens/CalendarViewModel.kt
+    Effect: Shows previous month's entries after navigating
+
+#18 computeTrendData shows 0% for days with no classes
+    File: ui/screens/HomeViewModel.kt:294-302
+    Effect: Weekends/holidays drag trend chart down
+
+#19 Hardcoded 75% target threshold in UI
+    Files: HomeComponents.kt:81, CalendarScreen.kt:313
+    Effect: Ignores session's targetAttendancePercent
+
+#20 Auto-mark hour slider has wrong step count
+    File: ui/screens/SettingsScreen.kt:256-257
+    Code:  steps = 5  (range 18..23)
+    Should: steps = 4  for integer hours
+
+#21 CSV import doesn't enforce single-active-session
+    File: util/ExportUtil.kt:210-213
+    Effect: Multiple or zero active sessions after import
+
+LOW-MEDIUM
+----------
+#22 Integer division truncates attendance percentages
+    Files: HomeComponents.kt:78, CalendarScreen.kt:301
+    Effect: 7/9 shows 77% instead of 78%
+
+#23 Hardcoded user-facing strings violate AGENTS.md
+    Files: SubjectCard.kt, LowAttendanceBanner.kt, HomeComponents.kt, AddEditSubjectScreen.kt
+
+#24 HorizontalPager beyondViewportPageCount=0 destroys tab state
+    File: ui/screens/MainScreen.kt:95
+    Effect: Tab UI state resets when switching tabs

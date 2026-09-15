@@ -254,7 +254,7 @@ fun SettingsScreen(
                     value = prefs.autoMarkHour.toFloat(),
                     onValueChange = { viewModel.setAutoMarkHour(it.toInt()) },
                     valueRange = 18f..23f,
-                    steps = 5,
+                    steps = 4,
                 )
             }
 

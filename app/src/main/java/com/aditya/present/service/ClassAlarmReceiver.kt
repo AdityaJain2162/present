@@ -5,17 +5,23 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import androidx.core.app.NotificationCompat
 import com.aditya.present.MainActivity
 import com.aditya.present.R
+import com.aditya.present.data.PresentDatabase
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.util.AlarmScheduler
 import com.aditya.present.util.NotificationChannels
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 /**
  * Fired by [AlarmScheduler] when a class reminder is due.
- * Posts a notification with inline Present / Absent / Cancel actions.
+ * Posts a notification with inline Present / Absent / Cancel actions,
+ * then reschedules the alarm for the next week's occurrence.
  */
 class ClassAlarmReceiver : BroadcastReceiver() {
 
@@ -74,6 +80,39 @@ class ClassAlarmReceiver : BroadcastReceiver() {
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(notifId, notification)
+
+        // Reschedule for next week's occurrence
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val dao = PresentDatabase.get(context).dao()
+                val themeRepo = com.aditya.present.data.ThemeRepository(context)
+                val prefs = themeRepo.themePrefs.first()
+                if (!prefs.classNotificationsEnabled) return@launch
+
+                val slot = dao.getAllSlots().find { it.id == slotId } ?: return@launch
+                val subject = dao.getSubjectById(subjectId) ?: return@launch
+
+                // Schedule for next week (7 days from the fired date)
+                val nextDate = Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_YEAR, 7)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                AlarmScheduler.scheduleClassReminder(
+                    context = context,
+                    slot = slot,
+                    subject = subject,
+                    dateMillis = nextDate.timeInMillis,
+                    leadMinutes = prefs.notificationLeadMinutes,
+                )
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 
     private fun formatTime(startTimeMinutes: Int): String {
@@ -82,6 +121,8 @@ class ClassAlarmReceiver : BroadcastReceiver() {
         val cal = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
         return android.text.format.DateFormat.format("h:mm a", cal).toString()
     }

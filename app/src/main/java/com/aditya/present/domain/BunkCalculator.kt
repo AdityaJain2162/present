@@ -25,11 +25,12 @@ object BunkCalculator {
         } else 0
 
         val recoveryNeeded = if (percentage < target && totalUnits > 0) {
-            val needed = ((target * (totalUnits + remainingClasses) - attendedUnits) / (1f - target))
+            val needed = ((target * totalUnits - attendedUnits) / (1f - target))
             Math.ceil(needed.toDouble()).toInt().coerceAtLeast(0)
         } else 0
 
-        val isBeyondSaving = totalUnits > 0 && percentage < target && remainingClasses == 0
+        val isBeyondSaving = totalUnits > 0 && percentage < target &&
+            (attendedUnits + remainingClasses).toFloat() / (totalUnits + remainingClasses) < target
 
         return Result(
             attendedUnits = attendedUnits,

@@ -81,7 +81,8 @@ class TimetableViewModel @Inject constructor(
                                     } else {
                                         repository.getAttendanceForSubject(subject.id).map { entries ->
                                             val todayEntry = entries.find {
-                                                it.date in startOfToday..endOfToday
+                                                it.date in startOfToday..endOfToday &&
+                                                    it.slotId == slot.id
                                             }
                                             TimetableSlot(
                                                 slot = slot,
@@ -178,6 +179,7 @@ class TimetableViewModel @Inject constructor(
     }
 
     private val markMutex = Mutex()
+    private var lastMarkedId: Long? = null
 
     fun markAttendance(subjectId: Long, slotId: Long, status: AttendanceStatus) {
         viewModelScope.launch {
@@ -186,7 +188,17 @@ class TimetableViewModel @Inject constructor(
                 val allSlots = repository.getAllSlots()
                 val slot = allSlots.find { it.id == slotId }
                 val units = slot?.units ?: 1
-                repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, units = units, slotId = slotId)
+                lastMarkedId = repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, units = units, slotId = slotId)
+            }
+        }
+    }
+
+    fun undoLastMarked() {
+        val id = lastMarkedId ?: return
+        viewModelScope.launch {
+            markMutex.withLock {
+                repository.deleteAttendanceById(id)
+                lastMarkedId = null
             }
         }
     }

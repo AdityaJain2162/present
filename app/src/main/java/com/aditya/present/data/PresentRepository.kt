@@ -2,6 +2,7 @@ package com.aditya.present.data
 
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.domain.SessionType
+import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -10,6 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class PresentRepository @Inject constructor(
     private val dao: PresentDao,
+    private val database: PresentDatabase,
 ) {
     // Sessions
     fun getAllSessions(): Flow<List<AcademicSessionEntity>> = dao.getAllSessions()
@@ -90,6 +92,67 @@ class PresentRepository @Inject constructor(
         dao.clearSlots()
         dao.clearSubjects()
         dao.clearSessions()
+    }
+
+    /**
+     * Clears all existing data and imports the provided data in a single transaction.
+     * If any insert fails, the entire operation is rolled back — existing data is preserved.
+     */
+    suspend fun replaceAllData(
+        sessions: List<AcademicSessionEntity>,
+        subjects: List<SubjectEntity>,
+        slots: List<ClassSlotEntity>,
+        attendance: List<AttendanceEntity>,
+    ): Map<String, Long> {
+        return database.withTransaction {
+            dao.clearAttendance()
+            dao.clearSlots()
+            dao.clearSubjects()
+            dao.clearSessions()
+
+            val sessionIdMap = mutableMapOf<Long, Long>()
+            sessions.forEach { s ->
+                val newId = dao.insertSession(s.copy(id = 0))
+                sessionIdMap[s.id] = newId
+            }
+
+            val subjectIdMap = mutableMapOf<Long, Long>()
+            subjects.forEach { s ->
+                val mappedSessionId = sessionIdMap[s.sessionId] ?: s.sessionId
+                val newId = dao.insertSubject(s.copy(id = 0, sessionId = mappedSessionId))
+                subjectIdMap[s.id] = newId
+            }
+
+            slots.forEach { slot ->
+                val mappedSubjectId = subjectIdMap[slot.subjectId] ?: slot.subjectId
+                dao.insertSlot(slot.copy(id = 0, subjectId = mappedSubjectId))
+            }
+
+            attendance.forEach { a ->
+                val mappedSubjectId = subjectIdMap[a.subjectId] ?: a.subjectId
+                dao.insertAttendance(a.copy(id = 0, subjectId = mappedSubjectId))
+            }
+
+            // Ensure exactly one active session (prefer the first imported active one,
+            // or the most recent if none were active)
+            val importedSessionIds = sessionIdMap.values.toList()
+            val firstActive = sessions.indexOfFirst { it.isActive }
+            val activeId = if (firstActive >= 0) {
+                importedSessionIds.getOrNull(firstActive)
+            } else {
+                importedSessionIds.lastOrNull()
+            }
+            if (activeId != null) {
+                dao.setActiveSession(activeId)
+            }
+
+            mapOf(
+                "sessions" to sessions.size.toLong(),
+                "subjects" to subjects.size.toLong(),
+                "slots" to slots.size.toLong(),
+                "attendance" to attendance.size.toLong(),
+            )
+        }
     }
 
     suspend fun importSession(session: AcademicSessionEntity): Long = dao.insertSession(session)

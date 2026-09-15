@@ -80,6 +80,13 @@ class SessionsViewModel @Inject constructor(
     fun deleteSession(session: AcademicSessionEntity) {
         viewModelScope.launch {
             repository.deleteSession(session)
+            // If the deleted session was active, activate the most recent remaining one
+            if (session.isActive) {
+                val remaining = repository.getAllSessionsList()
+                if (remaining.isNotEmpty()) {
+                    repository.setActiveSession(remaining.first().id)
+                }
+            }
         }
     }
 

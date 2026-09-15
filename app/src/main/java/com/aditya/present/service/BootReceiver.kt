@@ -32,21 +32,50 @@ class BootReceiver : BroadcastReceiver() {
                 val themeRepo = ThemeRepository(context)
                 val currentPrefs = themeRepo.themePrefs.first()
 
-                // Re-schedule today's class reminders
-                val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-                val slots = dao.getSlotsForDay(today).first()
-                for (slot in slots) {
-                    val subject = dao.getSubjectById(slot.subjectId) ?: continue
-                    AlarmScheduler.scheduleClassReminder(
-                        context = context,
-                        slot = slot,
-                        subject = subject,
-                        dateMillis = System.currentTimeMillis(),
-                    )
+                // Re-schedule class reminders for ALL slots (not just today)
+                if (currentPrefs.classNotificationsEnabled) {
+                    val allSlots = dao.getAllSlots()
+                    val today = Calendar.getInstance()
+                    for (slot in allSlots) {
+                        val subject = dao.getSubjectById(slot.subjectId) ?: continue
+
+                        // Find the next occurrence of this day of week
+                        val todayDayOfWeek = today.get(Calendar.DAY_OF_WEEK)
+                        var daysUntil = (slot.dayOfWeek - todayDayOfWeek + 7) % 7
+                        if (daysUntil == 0) {
+                            // Today — check if the class hasn't started yet
+                            val classTime = Calendar.getInstance().apply {
+                                set(Calendar.HOUR_OF_DAY, slot.startTimeMinutes / 60)
+                                set(Calendar.MINUTE, slot.startTimeMinutes % 60)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            if (classTime.timeInMillis <= System.currentTimeMillis()) {
+                                daysUntil = 7
+                            }
+                        }
+                        val nextDate = Calendar.getInstance().apply {
+                            add(Calendar.DAY_OF_YEAR, daysUntil)
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+
+                        AlarmScheduler.scheduleClassReminder(
+                            context = context,
+                            slot = slot,
+                            subject = subject,
+                            dateMillis = nextDate.timeInMillis,
+                            leadMinutes = currentPrefs.notificationLeadMinutes,
+                        )
+                    }
                 }
 
-                // Re-schedule auto-mark
-                AlarmScheduler.scheduleAutoMark(context, currentPrefs.autoMarkHour)
+                // Re-schedule auto-mark only if enabled
+                if (currentPrefs.autoMarkEnabled) {
+                    AlarmScheduler.scheduleAutoMark(context, currentPrefs.autoMarkHour)
+                }
             } finally {
                 pendingResult.finish()
             }

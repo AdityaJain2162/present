@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -79,8 +80,12 @@ class CalendarViewModel @Inject constructor(
 
                     repository.getAttendanceForDate(startOfMonth, endOfMonth)
                         .map { entries ->
-                            val subjects = repository.getAllSubjects().associateBy { it.id }
-                            val byDay = entries.groupBy { entry ->
+                            // Only show subjects from the active session
+                            val subjects = repository.getSubjectsForSession(session.id).first()
+                                .associateBy { it.id }
+                            val sessionSubjectIds = subjects.keys
+                            val filteredEntries = entries.filter { it.subjectId in sessionSubjectIds }
+                            val byDay = filteredEntries.groupBy { entry ->
                                 val entryCal = Calendar.getInstance().apply {
                                     timeInMillis = entry.date
                                 }
@@ -111,6 +116,7 @@ class CalendarViewModel @Inject constructor(
 
     fun setMonthOffset(offset: Int) {
         _monthOffset.value = offset
+        clearDayEntries()
     }
 
     fun loadDayEntries(day: Int) {
@@ -131,26 +137,42 @@ class CalendarViewModel @Inject constructor(
             val end = cal.timeInMillis
 
             val entries = repository.getAttendanceForDateList(start, end)
-            val subjects = repository.getAllSubjects().associateBy { it.id }
-            _selectedDayEntries.value = entries.map { entry ->
-                DayEntry(entry, subjects[entry.subjectId])
+            val session = repository.getActiveSession().first()
+            val subjects = if (session != null) {
+                repository.getSubjectsForSession(session.id).first().associateBy { it.id }
+            } else {
+                emptyMap()
             }
+            val sessionSubjectIds = subjects.keys
+            _selectedDayEntries.value = entries
+                .filter { it.subjectId in sessionSubjectIds }
+                .map { entry ->
+                    DayEntry(entry, subjects[entry.subjectId])
+                }
+            _loadedDay = day
         }
     }
 
     fun clearDayEntries() {
         _selectedDayEntries.value = emptyList()
+        _loadedDay = null
     }
+
+    private var _loadedDay: Int? = null
 
     fun updateAttendanceStatus(entryId: Long, newStatus: AttendanceStatus) {
         viewModelScope.launch {
             repository.updateAttendanceStatus(entryId, newStatus)
+            // Reload the day entries to reflect the change
+            _loadedDay?.let { loadDayEntries(it) }
         }
     }
 
     fun deleteAttendanceEntry(entryId: Long) {
         viewModelScope.launch {
             repository.deleteAttendanceById(entryId)
+            // Reload the day entries to reflect the deletion
+            _loadedDay?.let { loadDayEntries(it) }
         }
     }
 }

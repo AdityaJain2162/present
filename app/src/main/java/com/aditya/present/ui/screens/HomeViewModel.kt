@@ -56,7 +56,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _lastMarked = MutableStateFlow<Pair<String, AttendanceStatus>?>(null)
-    private val _lastMarkedId = MutableStateFlow<Long?>(null)
+    private val _lastMarkedIds = MutableStateFlow<List<Long>>(emptyList())
     private val markMutex = Mutex()
 
     @Suppress("OPT_IN_USAGE")
@@ -188,17 +188,18 @@ class HomeViewModel @Inject constructor(
 
                 if (todaySlots.isNotEmpty()) {
                     // Mark each slot for today, passing the slot's unit count
-                    var lastId: Long? = null
+                    val createdIds = mutableListOf<Long>()
                     for (slot in todaySlots) {
-                        lastId = repository.upsertAttendance(
+                        val id = repository.upsertAttendance(
                             subjectId = subjectId,
                             date = now,
                             status = status,
                             units = slot.units,
                             slotId = slot.id,
                         )
+                        createdIds.add(id)
                     }
-                    _lastMarkedId.value = lastId
+                    _lastMarkedIds.value = createdIds
                 } else {
                     // No slots today — mark a slotless entry
                     val id = repository.upsertAttendance(
@@ -206,7 +207,7 @@ class HomeViewModel @Inject constructor(
                         date = now,
                         status = status,
                     )
-                    _lastMarkedId.value = id
+                    _lastMarkedIds.value = listOf(id)
                 }
                 _lastMarked.value = subjectName to status
             }
@@ -214,11 +215,12 @@ class HomeViewModel @Inject constructor(
     }
 
     fun undoLastMarked() {
-        val id = _lastMarkedId.value ?: return
+        val ids = _lastMarkedIds.value
+        if (ids.isEmpty()) return
         viewModelScope.launch {
             markMutex.withLock {
-                repository.deleteAttendanceById(id)
-                _lastMarkedId.value = null
+                ids.forEach { repository.deleteAttendanceById(it) }
+                _lastMarkedIds.value = emptyList()
                 _lastMarked.value = null
             }
         }
@@ -231,6 +233,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun switchSession(sessionId: Long) {
+        _lastMarked.value = null
+        _lastMarkedIds.value = emptyList()
         viewModelScope.launch {
             repository.setActiveSession(sessionId)
         }

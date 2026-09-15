@@ -36,6 +36,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 val startOfDay = startOfDay(dateMillis)
                 val endOfDay = endOfDay(dateMillis)
                 val existing = dao.getAttendanceForSlotOnDate(subjectId, slotId, startOfDay, endOfDay)
+                // Look up the slot to get the correct unit count
+                val slot = dao.getAllSlots().find { it.id == slotId }
+                val units = slot?.units ?: 1
                 if (existing != null) {
                     dao.updateAttendanceStatus(existing.id, status.name)
                 } else {
@@ -45,7 +48,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                             date = dateMillis,
                             slotId = slotId,
                             status = status.name,
-                            units = 1,
+                            units = units,
                             isAuto = false,
                         )
                     )

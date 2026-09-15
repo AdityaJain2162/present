@@ -76,7 +76,7 @@ object ExportUtil {
                             s.sessionId.toString(),
                             s.name,
                             s.acronym,
-                            "#${Integer.toHexString(s.color).uppercase()}",
+                            "#${String.format("%08X", s.color)}",
                             s.targetAttendancePercent.toInt().toString(),
                             s.totalUnits.toString(),
                             s.teacherName,
@@ -202,32 +202,13 @@ object ExportUtil {
                     }
                 }
 
-                // Clear existing data and import
-                repository.clearAllData()
-
-                // Import in order (sessions → subjects → slots → attendance)
-                val sessionIdMap = mutableMapOf<Long, Long>()
-                sessions.forEach { s ->
-                    val newId = repository.importSession(s.copy(id = 0))
-                    sessionIdMap[s.id] = newId
-                }
-
-                val subjectIdMap = mutableMapOf<Long, Long>()
-                subjects.forEach { s ->
-                    val mappedSessionId = sessionIdMap[s.sessionId] ?: s.sessionId
-                    val newId = repository.importSubject(s.copy(id = 0, sessionId = mappedSessionId))
-                    subjectIdMap[s.id] = newId
-                }
-
-                slots.forEach { slot ->
-                    val mappedSubjectId = subjectIdMap[slot.subjectId] ?: slot.subjectId
-                    repository.importSlot(slot.copy(id = 0, subjectId = mappedSubjectId))
-                }
-
-                attendance.forEach { a ->
-                    val mappedSubjectId = subjectIdMap[a.subjectId] ?: a.subjectId
-                    repository.importAttendance(a.copy(id = 0, subjectId = mappedSubjectId))
-                }
+                // Clear existing data and import in a single transaction (rollback-safe)
+                repository.replaceAllData(
+                    sessions = sessions,
+                    subjects = subjects,
+                    slots = slots,
+                    attendance = attendance,
+                )
 
                 Result.success(Unit)
             } catch (e: Exception) {
@@ -254,14 +235,24 @@ object ExportUtil {
                     }
                 }
                 c == ',' && !inQuotes -> {
-                    result.add(current.toString())
+                    result.add(unescapeCsv(current.toString()))
                     current = StringBuilder()
                 }
                 else -> current.append(c)
             }
             i++
         }
-        result.add(current.toString())
+        result.add(unescapeCsv(current.toString()))
         return result
+    }
+
+    /**
+     * Strips the formula-injection guard quote prefix added by [escapeCsv].
+     */
+    private fun unescapeCsv(value: String): String {
+        if (value.length >= 2 && value[0] == '\'' && value[1] in setOf('=', '+', '-', '@', '\t', '\r')) {
+            return value.substring(1)
+        }
+        return value
     }
 }

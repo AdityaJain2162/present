@@ -69,7 +69,7 @@ data class ClassSlotEntity(
             onDelete = ForeignKey.CASCADE,
         )
     ],
-    indices = [Index("subjectId"), Index("date")]
+    indices = [Index("subjectId"), Index("date"), Index("slotId")]
 )
 data class AttendanceEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

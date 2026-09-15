@@ -196,9 +196,18 @@ fun CalendarScreen(
                                             day == today.get(Calendar.DAY_OF_MONTH)
                                         val dayEntries = uiState.attendanceByDay[day] ?: emptyList()
                                         // Use the worst status for the day's background tint
+                                        // Priority: ABSENT > CANCELLED > ON_DUTY > HOLIDAY > PRESENT
                                         val dayStatus = dayEntries.mapNotNull {
                                             runCatching { AttendanceStatus.valueOf(it.status) }.getOrNull()
-                                        }.minByOrNull { it.ordinal }?.name
+                                        }.maxByOrNull {
+                                            when (it) {
+                                                AttendanceStatus.ABSENT -> 5
+                                                AttendanceStatus.CANCELLED -> 4
+                                                AttendanceStatus.ON_DUTY -> 3
+                                                AttendanceStatus.HOLIDAY -> 2
+                                                AttendanceStatus.PRESENT -> 1
+                                            }
+                                        }?.name
 
                                         Box(
                                             modifier = Modifier
@@ -298,7 +307,7 @@ fun CalendarScreen(
                         val onDuty = allEntries.filter { it.status == "ON_DUTY" }.sumOf { it.units }
                         val holiday = allEntries.filter { it.status == "HOLIDAY" }.sumOf { it.units }
                         val total = present + absent
-                        val pct = if (total > 0) (present * 100 / total) else 0
+                        val pct = if (total > 0) (present.toFloat() * 100 / total).toInt() else 0
 
                         SummaryRow(stringResource(R.string.status_present), present, Color(0xFF4CAF50))
                         SummaryRow(stringResource(R.string.status_absent), absent, Color(0xFFF44336))

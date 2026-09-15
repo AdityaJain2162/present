@@ -24,6 +24,9 @@ import com.aditya.present.ui.screens.OnboardingViewModel
 import com.aditya.present.ui.screens.SessionsScreen
 import com.aditya.present.ui.screens.StatsScreen
 
+import java.net.URLEncoder
+import java.net.URLDecoder
+
 object Routes {
     const val ONBOARDING = "onboarding"
     const val MAIN = "main"
@@ -43,7 +46,10 @@ object Routes {
         attended: Int,
         total: Int,
         target: Float,
-    ) = "bunk/$subjectId/$subjectName/$subjectColor/$attended/$total/$target"
+    ): String {
+        val encodedName = URLEncoder.encode(subjectName, "UTF-8")
+        return "bunk/$subjectId/$encodedName/$subjectColor/$attended/$total/$target"
+    }
 }
 
 @Composable
@@ -165,8 +171,10 @@ fun PresentNavHost(
                 navArgument("target") { type = NavType.FloatType },
             ),
         ) { backStackEntry ->
+            val rawName = backStackEntry.arguments?.getString("subjectName") ?: ""
+            val decodedName = URLDecoder.decode(rawName, "UTF-8")
             BunkCalculatorScreen(
-                subjectName = backStackEntry.arguments?.getString("subjectName") ?: "",
+                subjectName = decodedName,
                 subjectColor = backStackEntry.arguments?.getInt("subjectColor") ?: 0xFF6750A4.toInt(),
                 attendedUnits = backStackEntry.arguments?.getInt("attended") ?: 0,
                 totalUnits = backStackEntry.arguments?.getInt("total") ?: 0,

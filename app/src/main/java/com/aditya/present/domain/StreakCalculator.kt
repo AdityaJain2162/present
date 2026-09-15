@@ -26,7 +26,7 @@ object StreakCalculator {
         // Group entries by day (start-of-day timestamp)
         val byDay = entries.groupBy { startOfDay(it.date) }.toSortedMap()
         val dayStatuses = byDay.mapValues { (_, dayEntries) ->
-            dayEntries.map { AttendanceStatus.valueOf(it.status) }
+            dayEntries.mapNotNull { runCatching { AttendanceStatus.valueOf(it.status) }.getOrNull() }
         }
 
         val perfectDays = dayStatuses.count { (_, statuses) ->

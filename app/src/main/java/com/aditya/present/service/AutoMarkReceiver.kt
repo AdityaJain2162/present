@@ -34,6 +34,10 @@ class AutoMarkReceiver : BroadcastReceiver() {
                 val dao = PresentDatabase.get(context).dao()
                 val themeRepo = com.aditya.present.data.ThemeRepository(context)
                 val prefs = themeRepo.themePrefs.first()
+
+                // Don't process if auto-mark is disabled
+                if (!prefs.autoMarkEnabled) return@launch
+
                 val today = Calendar.getInstance()
                 val startOfDay = startOfDay(today)
                 val endOfDay = endOfDay(today)
