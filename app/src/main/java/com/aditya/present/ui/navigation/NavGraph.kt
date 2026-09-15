@@ -1,6 +1,9 @@
 package com.aditya.present.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -8,10 +11,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aditya.present.ui.screens.AddEditSubjectScreen
-import com.aditya.present.ui.screens.HomeScreen
+import com.aditya.present.ui.screens.MainScreen
+import com.aditya.present.ui.screens.OnboardingScreen
+import com.aditya.present.ui.screens.OnboardingViewModel
 
 object Routes {
-    const val HOME = "home"
+    const val ONBOARDING = "onboarding"
+    const val MAIN = "main"
     const val ADD_SUBJECT = "add_subject/{sessionId}"
     const val EDIT_SUBJECT = "edit_subject/{sessionId}/{subjectId}"
 
@@ -23,18 +29,32 @@ object Routes {
 fun PresentNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val hasSession by onboardingViewModel.hasActiveSession.collectAsState()
+
+    val startDestination = if (hasSession) Routes.MAIN else Routes.ONBOARDING
+
     NavHost(
         navController = navController,
-        startDestination = Routes.HOME,
+        startDestination = startDestination,
     ) {
-        composable(Routes.HOME) {
-            HomeScreen(
-                onAddSubject = {
-                    // TODO: pass actual session ID once onboarding creates a session
-                    navController.navigate(Routes.addSubject(1L))
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onSessionCreated = { type, name, start, end, target ->
+                    onboardingViewModel.createSession(type, name, start, end, target) { sessionId ->
+                        navController.navigate(Routes.MAIN) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    }
                 },
-                onSubjectClick = { subjectId ->
-                    // TODO: navigate to subject detail
+            )
+        }
+
+        composable(Routes.MAIN) {
+            MainScreen(
+                onAddSubject = {
+                    // Navigate to add subject — session ID will be resolved from active session
+                    navController.navigate(Routes.addSubject(1L))
                 },
             )
         }
