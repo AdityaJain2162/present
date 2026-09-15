@@ -104,6 +104,9 @@
     <string name="timetable_add">Add</string>
     <string name="timetable_units">%1$d units</string>
     <string name="timetable_until">until %1$s</string>
+    <string name="timetable_select_subject">Select a subject</string>
+    <string name="timetable_end_time">Ends at %1$s</string>
+    <string name="timetable_swipe_to_mark">Swipe right to mark Present, left for Absent</string>
     <string name="timetable_select_day">Select %1$s</string>
     <string name="timetable_marked_status">%1$s at %2$s. Marked %3$s.</string>
     <string name="timetable_swipe_hint">%1$s at %2$s. Swipe right for present, left for absent.</string>

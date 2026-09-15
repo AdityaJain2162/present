@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Schedule
@@ -237,6 +238,31 @@ fun TimetableScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 80.dp),
                     ) {
+                        // Swipe hint
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Swipe,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.timetable_swipe_to_mark),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                         items(uiState.slotsForDay, key = { it.slot.id }) { timetableSlot ->
                             timetableSlot.subject?.let { subject ->
                                 SwipeableTimetableCard(
@@ -512,27 +538,8 @@ private fun AddSlotDialog(
         units
     }
 
-    if (showTimePicker) {
-        val timeState = rememberTimePickerState(
-            initialHour = selectedHour,
-            initialMinute = selectedMinute,
-            is24Hour = true,
-        )
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    selectedHour = timeState.hour
-                    selectedMinute = timeState.minute
-                    showTimePicker = false
-                }) { Text(stringResource(R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
-            },
-            text = { TimePicker(state = timeState) },
-        )
-    }
+    val endHour = (selectedHour + effectiveUnits) % 24
+    val endTimeText = String.format("%02d:%02d", endHour, selectedMinute)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -566,9 +573,14 @@ private fun AddSlotDialog(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text(stringResource(R.string.timetable_subject)) },
+                        placeholder = { Text(stringResource(R.string.timetable_select_subject)) },
                         modifier = Modifier.fillMaxWidth().clickable { subjectMenuExpanded = true },
                         trailingIcon = {
-                            TextButton(onClick = { subjectMenuExpanded = true }) { Text(stringResource(R.string.timetable_select)) }
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
                         },
                     )
                     DropdownMenu(
@@ -603,7 +615,7 @@ private fun AddSlotDialog(
                     }
                 }
 
-                // Time picker button
+                // Time picker button with end time preview
                 OutlinedTextField(
                     value = String.format("%02d:%02d", selectedHour, selectedMinute),
                     onValueChange = {},
@@ -616,6 +628,11 @@ private fun AddSlotDialog(
                     trailingIcon = {
                         Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(20.dp))
                     },
+                )
+                Text(
+                    text = stringResource(R.string.timetable_end_time, endTimeText),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 // Duration selector
@@ -672,4 +689,26 @@ private fun AddSlotDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
+
+    if (showTimePicker) {
+        val timeState = rememberTimePickerState(
+            initialHour = selectedHour,
+            initialMinute = selectedMinute,
+            is24Hour = true,
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    selectedHour = timeState.hour
+                    selectedMinute = timeState.minute
+                    showTimePicker = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
+            },
+            text = { TimePicker(state = timeState) },
+        )
+    }
 }
