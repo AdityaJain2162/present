@@ -134,6 +134,12 @@ class PresentRepository @Inject constructor(
     suspend fun deleteAttendance(entry: AttendanceEntity) = dao.deleteAttendance(entry)
     suspend fun deleteAttendanceById(id: Long) = dao.deleteAttendanceById(id)
 
+    suspend fun updateAttendanceStatus(id: Long, status: AttendanceStatus) =
+        dao.updateAttendanceStatus(id, status.name)
+
+    suspend fun getAttendanceForDateList(start: Long, end: Long): List<AttendanceEntity> =
+        dao.getAttendanceForDateList(start, end)
+
     /**
      * Upsert attendance: if an entry exists for this subject+slot on this date,
      * update it; otherwise insert a new one. Slot-aware: if slotId is provided,

@@ -72,6 +72,9 @@ interface PresentDao {
     @Query("SELECT * FROM attendance WHERE date BETWEEN :startOfDay AND :endOfDay ORDER BY date")
     fun getAttendanceForDate(startOfDay: Long, endOfDay: Long): Flow<List<AttendanceEntity>>
 
+    @Query("SELECT * FROM attendance WHERE date BETWEEN :startOfDay AND :endOfDay ORDER BY date")
+    suspend fun getAttendanceForDateList(startOfDay: Long, endOfDay: Long): List<AttendanceEntity>
+
     @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end ORDER BY date")
     fun getAttendanceForSubjectInRange(subjectId: Long, start: Long, end: Long): Flow<List<AttendanceEntity>>
 
@@ -80,6 +83,9 @@ interface PresentDao {
 
     @Query("DELETE FROM attendance WHERE id = :id")
     suspend fun deleteAttendanceById(id: Long)
+
+    @Query("UPDATE attendance SET status = :status WHERE id = :id")
+    suspend fun updateAttendanceStatus(id: Long, status: String)
 
     @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end LIMIT 1")
     suspend fun getAttendanceForSubjectOnDate(subjectId: Long, start: Long, end: Long): AttendanceEntity?

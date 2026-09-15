@@ -3,7 +3,10 @@ package com.aditya.present.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aditya.present.data.AcademicSessionEntity
+import com.aditya.present.data.AttendanceEntity
 import com.aditya.present.data.PresentRepository
+import com.aditya.present.data.SubjectEntity
+import com.aditya.present.domain.AttendanceStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,8 +16,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
+
+data class DayEntry(
+    val attendance: AttendanceEntity,
+    val subject: SubjectEntity?,
+)
 
 data class CalendarUiState(
     val activeSession: AcademicSessionEntity? = null,
@@ -27,9 +36,11 @@ class CalendarViewModel @Inject constructor(
     private val repository: PresentRepository,
 ) : ViewModel() {
 
-    // Month offset: 0 = current, -1 = previous, +1 = next
     private val _monthOffset = MutableStateFlow(0)
     val monthOffset: StateFlow<Int> = _monthOffset.asStateFlow()
+
+    private val _selectedDayEntries = MutableStateFlow<List<DayEntry>>(emptyList())
+    val selectedDayEntries: StateFlow<List<DayEntry>> = _selectedDayEntries.asStateFlow()
 
     @Suppress("OPT_IN_USAGE")
     val uiState: StateFlow<CalendarUiState> = repository.getActiveSession()
@@ -95,5 +106,46 @@ class CalendarViewModel @Inject constructor(
 
     fun setMonthOffset(offset: Int) {
         _monthOffset.value = offset
+    }
+
+    fun loadDayEntries(day: Int) {
+        viewModelScope.launch {
+            val cal = Calendar.getInstance().apply {
+                add(Calendar.MONTH, _monthOffset.value)
+                set(Calendar.DAY_OF_MONTH, day)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val start = cal.timeInMillis
+            cal.set(Calendar.HOUR_OF_DAY, 23)
+            cal.set(Calendar.MINUTE, 59)
+            cal.set(Calendar.SECOND, 59)
+            cal.set(Calendar.MILLISECOND, 999)
+            val end = cal.timeInMillis
+
+            val entries = repository.getAttendanceForDateList(start, end)
+            val subjects = repository.getAllSubjects().associateBy { it.id }
+            _selectedDayEntries.value = entries.map { entry ->
+                DayEntry(entry, subjects[entry.subjectId])
+            }
+        }
+    }
+
+    fun clearDayEntries() {
+        _selectedDayEntries.value = emptyList()
+    }
+
+    fun updateAttendanceStatus(entryId: Long, newStatus: AttendanceStatus) {
+        viewModelScope.launch {
+            repository.updateAttendanceStatus(entryId, newStatus)
+        }
+    }
+
+    fun deleteAttendanceEntry(entryId: Long) {
+        viewModelScope.launch {
+            repository.deleteAttendanceById(entryId)
+        }
     }
 }

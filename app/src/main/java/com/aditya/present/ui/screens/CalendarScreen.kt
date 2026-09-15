@@ -1,14 +1,15 @@
 package com.aditya.present.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,15 +18,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,10 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
 import java.util.Calendar
@@ -201,7 +210,11 @@ fun CalendarScreen(
                                                         "HOLIDAY" -> Color(0xFF9C27B0).copy(alpha = 0.15f)
                                                         else -> Color.Transparent
                                                     }
-                                                ),
+                                                )
+                                                .clickable {
+                                                    haptics.tap()
+                                                    viewModel.loadDayEntries(day)
+                                                },
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             Text(
@@ -271,6 +284,23 @@ fun CalendarScreen(
             }
         }
     }
+
+    // Day detail bottom sheet
+    val dayEntries by viewModel.selectedDayEntries.collectAsState()
+    if (dayEntries.isNotEmpty()) {
+        DayDetailSheet(
+            entries = dayEntries,
+            onUpdateStatus = { id, status ->
+                haptics.confirm()
+                viewModel.updateAttendanceStatus(id, status)
+            },
+            onDelete = { id ->
+                haptics.heavy()
+                viewModel.deleteAttendanceEntry(id)
+            },
+            onDismiss = { viewModel.clearDayEntries() },
+        )
+    }
 }
 
 @Composable
@@ -313,5 +343,125 @@ private fun SummaryRow(label: String, count: Int, color: Color) {
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DayDetailSheet(
+    entries: List<DayEntry>,
+    onUpdateStatus: (Long, AttendanceStatus) -> Unit,
+    onDelete: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val haptics = LocalHaptics.current
+    var deleteTarget by remember { mutableStateOf<Long?>(null) }
+
+    if (deleteTarget != null) {
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = { Text("Delete Entry") },
+            text = { Text("Remove this attendance record? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete(deleteTarget!!)
+                    deleteTarget = null
+                }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) { Text("Cancel") }
+            },
+        )
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp),
+        ) {
+            Text(
+                text = "Attendance Entries",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            entries.forEach { entry ->
+                val status = runCatching {
+                    AttendanceStatus.valueOf(entry.attendance.status)
+                }.getOrNull()
+                val subjectName = entry.subject?.name ?: "Unknown"
+                val subjectColor = entry.subject?.color ?: 0xFF9E9E9E.toInt()
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CardShape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(subjectColor)),
+                            )
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Text(
+                                text = subjectName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
+                            )
+                            IconButton(onClick = {
+                                haptics.tap()
+                                deleteTarget = entry.attendance.id
+                            }) {
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    contentDescription = "Delete entry",
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            AttendanceStatus.entries.forEach { statusOption ->
+                                val isSelected = status == statusOption
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = {
+                                        haptics.tap()
+                                        onUpdateStatus(entry.attendance.id, statusOption)
+                                    },
+                                    label = {
+                                        Text(
+                                            statusOption.name.lowercase().replaceFirstChar { it.uppercase() },
+                                            fontSize = 11.sp,
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
     }
 }
