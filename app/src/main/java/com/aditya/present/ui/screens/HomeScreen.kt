@@ -61,6 +61,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.components.AttendanceMarkSheet
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
@@ -284,6 +285,12 @@ fun HomeScreen(
                                 },
                             )
                         }
+                    }
+
+                    // AdMob banner at the bottom of Home
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        BannerAd()
                     }
                 }
             }
