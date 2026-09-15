@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.aditya.present.ui.screens.AboutScreen
 import com.aditya.present.ui.screens.AddEditSubjectScreen
 import com.aditya.present.ui.screens.MainScreen
 import com.aditya.present.ui.screens.OnboardingScreen
@@ -18,6 +19,7 @@ import com.aditya.present.ui.screens.OnboardingViewModel
 object Routes {
     const val ONBOARDING = "onboarding"
     const val MAIN = "main"
+    const val ABOUT = "about"
     const val ADD_SUBJECT = "add_subject/{sessionId}"
     const val EDIT_SUBJECT = "edit_subject/{sessionId}/{subjectId}"
 
@@ -53,9 +55,17 @@ fun PresentNavHost(
         composable(Routes.MAIN) {
             MainScreen(
                 onAddSubject = {
-                    // Navigate to add subject — session ID will be resolved from active session
                     navController.navigate(Routes.addSubject(1L))
                 },
+                onAbout = {
+                    navController.navigate(Routes.ABOUT)
+                },
+            )
+        }
+
+        composable(Routes.ABOUT) {
+            AboutScreen(
+                onBack = { navController.popBackStack() },
             )
         }
 

@@ -50,6 +50,7 @@ import com.aditya.present.ui.theme.LocalAnimationsEnabled
 @Composable
 fun MainScreen(
     onAddSubject: () -> Unit,
+    onAbout: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf(Tab.HOME) }
     val animations = LocalAnimationsEnabled.current
@@ -83,7 +84,7 @@ fun MainScreen(
                 )
                 Tab.CALENDAR -> CalendarScreen()
                 Tab.TIMETABLE -> TimetableScreen()
-                Tab.SETTINGS -> SettingsScreen()
+                Tab.SETTINGS -> SettingsScreen(onAbout = onAbout)
             }
         }
     }

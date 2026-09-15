@@ -39,4 +39,35 @@ class SettingsViewModel @Inject constructor(
     fun setAnimationsEnabled(enabled: Boolean) {
         viewModelScope.launch { themeRepository.setAnimationsEnabled(enabled) }
     }
+
+    fun setHapticFeedback(enabled: Boolean) {
+        viewModelScope.launch { themeRepository.setHapticFeedback(enabled) }
+    }
+
+    fun setDefaultTargetPercent(percent: Int) {
+        viewModelScope.launch { themeRepository.setDefaultTargetPercent(percent) }
+    }
+
+    fun toggleWeekendDay(day: String) {
+        val current = themePrefs.value.weekendDays
+        val days = current.split(",").filter { it.isNotBlank() }.toMutableList()
+        if (days.contains(day)) days.remove(day) else days.add(day)
+        viewModelScope.launch { themeRepository.setWeekendDays(days.joinToString(",")) }
+    }
+
+    fun setAutoMarkHour(hour: Int) {
+        viewModelScope.launch { themeRepository.setAutoMarkHour(hour) }
+    }
+
+    fun setCardStyle(style: String) {
+        viewModelScope.launch { themeRepository.setCardStyle(style) }
+    }
+
+    fun setShowPercentageOnCards(enabled: Boolean) {
+        viewModelScope.launch { themeRepository.setShowPercentageOnCards(enabled) }
+    }
+
+    fun setCompactMode(enabled: Boolean) {
+        viewModelScope.launch { themeRepository.setCompactMode(enabled) }
+    }
 }

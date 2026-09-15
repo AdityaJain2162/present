@@ -181,20 +181,20 @@ fun PresentTheme(
             if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             } else {
-                if (isDark) buildDarkScheme(preset) else buildLightScheme(preset)
+                if (isDark) hctDarkScheme(preset.primary) else hctLightScheme(preset.primary)
             }
         }
         com.aditya.present.domain.ThemeMode.LIGHT -> {
             if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                dynamicLightColorScheme(context) else buildLightScheme(preset)
+                dynamicLightColorScheme(context) else hctLightScheme(preset.primary)
         }
         com.aditya.present.domain.ThemeMode.DARK -> {
             if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                dynamicDarkColorScheme(context) else buildDarkScheme(preset)
+                dynamicDarkColorScheme(context) else hctDarkScheme(preset.primary)
         }
         com.aditya.present.domain.ThemeMode.AMOLED -> {
             val base = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                dynamicDarkColorScheme(context) else buildDarkScheme(preset)
+                dynamicDarkColorScheme(context) else hctDarkScheme(preset.primary)
             base.copy(
                 background = Color(0xFF000000),
                 surface = Color(0xFF000000),
