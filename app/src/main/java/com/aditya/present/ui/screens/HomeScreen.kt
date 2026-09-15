@@ -67,6 +67,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.components.AttendanceMarkSheet
+import com.aditya.present.ui.components.LowAttendanceBanner
+import com.aditya.present.ui.components.LowAttendanceSubject
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
@@ -297,6 +299,22 @@ fun HomeScreen(
                             bestStreak = uiState.bestStreak,
                             perfectDays = uiState.perfectDays,
                         )
+                    }
+
+                    // Low-attendance warning banner
+                    item {
+                        val lowSubjects = uiState.subjects
+                            .filter { it.totalUnits > 0 && it.percentage < (it.subject.targetAttendancePercent / 100f) }
+                            .sortedBy { it.percentage }
+                            .map {
+                                LowAttendanceSubject(
+                                    name = it.subject.name,
+                                    color = it.subject.color,
+                                    percentage = it.percentage,
+                                    target = it.subject.targetAttendancePercent,
+                                )
+                            }
+                        LowAttendanceBanner(subjects = lowSubjects)
                     }
 
                     // Subject list with staggered animation
