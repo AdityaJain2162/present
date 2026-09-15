@@ -1,5 +1,10 @@
 package com.aditya.present.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,13 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -30,6 +33,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -39,6 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.ui.components.SubjectCard
+import com.aditya.present.ui.theme.CardShape
+import com.aditya.present.ui.theme.LocalAccentPreset
+import com.aditya.present.ui.theme.LocalAnimationsEnabled
+import com.aditya.present.ui.theme.primaryGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +58,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val accentPreset = LocalAccentPreset.current
+    val animations = LocalAnimationsEnabled.current
 
     Scaffold(
         modifier = modifier,
@@ -95,20 +106,75 @@ fun HomeScreen(
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(uiState.subjects, key = { it.id }) { subject ->
-                        SubjectCard(
-                            subject = subject,
-                            attendedUnits = 0,
-                            totalUnits = 0,
-                            percentage = 0f,
-                            onClick = { onSubjectClick(subject.id) },
+                    // Gradient header card with overall attendance
+                    item {
+                        OverallAttendanceCard(
+                            subjectCount = uiState.subjects.size,
+                            sessionName = uiState.activeSession?.name ?: "",
                         )
+                    }
+
+                    // Subject list with staggered animation
+                    itemsIndexed(uiState.subjects, key = { _, s -> s.id }) { index, subject ->
+                        val delayMs = if (animations) index * 40 else 0
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(tween(300, delayMillis = delayMs)) +
+                                slideInVertically(tween(300, delayMillis = delayMs)) { it / 4 },
+                        ) {
+                            SubjectCard(
+                                subject = subject,
+                                attendedUnits = 0,
+                                totalUnits = 0,
+                                percentage = 0f,
+                                onClick = { onSubjectClick(subject.id) },
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun OverallAttendanceCard(
+    subjectCount: Int,
+    sessionName: String,
+) {
+    val accentPreset = LocalAccentPreset.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(CardShape)
+            .background(primaryGradient(accentPreset))
+            .padding(24.dp),
+    ) {
+        Column {
+            Text(
+                text = sessionName.ifBlank { "Overall" },
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "--%",
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "$subjectCount ${if (subjectCount == 1) "subject" else "subjects"} • Tap a subject to mark attendance",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+            )
         }
     }
 }
@@ -118,23 +184,29 @@ private fun EmptyState(
     modifier: Modifier,
     onAddSubject: () -> Unit,
 ) {
+    val accentPreset = LocalAccentPreset.current
+
     Column(
         modifier = modifier.padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        // Gradient logo
         Box(
-            modifier = Modifier.size(80.dp),
+            modifier = Modifier
+                .size(88.dp)
+                .clip(CircleShape)
+                .background(primaryGradient(accentPreset)),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "P",
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "Welcome to Present!",
             style = MaterialTheme.typography.headlineSmall,
@@ -148,11 +220,11 @@ private fun EmptyState(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
         Button(onClick = onAddSubject, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(modifier = Modifier.size(8.dp))
-            Text("Add Your First Subject")
+            Text("Add Your First Subject", fontWeight = FontWeight.Medium)
         }
     }
 }

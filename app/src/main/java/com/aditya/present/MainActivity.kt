@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import com.aditya.present.data.ThemeRepository
-import com.aditya.present.domain.ThemeMode
 import com.aditya.present.ui.navigation.PresentNavHost
 import com.aditya.present.ui.theme.PresentTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,10 +37,16 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val themeMode by themeRepository.themeMode
-                .collectAsState(initial = ThemeMode.SYSTEM)
+            val prefs by themeRepository.themePrefs.collectAsState(
+                initial = com.aditya.present.data.ThemePrefs()
+            )
 
-            PresentTheme(themeMode = themeMode) {
+            PresentTheme(
+                themeMode = prefs.mode,
+                accentName = prefs.accentName,
+                dynamicColor = prefs.dynamicColor,
+                animationsEnabled = prefs.animationsEnabled,
+            ) {
                 PresentNavHost()
             }
         }
