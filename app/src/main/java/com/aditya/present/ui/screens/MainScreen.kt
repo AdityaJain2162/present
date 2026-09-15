@@ -1,15 +1,8 @@
 package com.aditya.present.ui.screens
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,6 +19,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -33,52 +28,51 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.ui.navigation.Tab
-import com.aditya.present.ui.theme.LocalAnimationsEnabled
 import com.aditya.present.ui.theme.LocalHaptics
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
     onAddSubject: () -> Unit,
     onAbout: () -> Unit = {},
 ) {
-    var selectedTab by remember { mutableStateOf(Tab.HOME) }
-    val animations = LocalAnimationsEnabled.current
+    val tabs = Tab.entries
+    val haptics = LocalHaptics.current
+    val scope = rememberCoroutineScope()
+
+    // Pager state drives both swipe and tab selection
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
 
     Scaffold(
         bottomBar = {
             FluidSlidingNavBar(
-                tabs = Tab.entries,
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
+                tabs = tabs,
+                selectedTab = tabs[pagerState.currentPage],
+                onTabSelected = { tab ->
+                    haptics.tap()
+                    val index = tabs.indexOf(tab)
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                },
             )
         }
     ) { padding ->
-        AnimatedContent(
-            targetState = selectedTab,
-            transitionSpec = {
-                if (!animations) fadeIn(tween(0)) togetherWith fadeOut(tween(0))
-                else {
-                    val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
-                    slideInHorizontally(tween(250)) { it / 4 * direction } + fadeIn(tween(250)) togetherWith
-                        slideOutHorizontally(tween(200)) { -it / 4 * direction } + fadeOut(tween(150))
-                }
-            },
-            label = "tab",
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.fillMaxSize().padding(padding),
-        ) { tab ->
-            when (tab) {
+            beyondViewportPageCount = 1,
+        ) { page ->
+            when (tabs[page]) {
                 Tab.HOME -> HomeScreen(
                     onAddSubject = onAddSubject,
                     onSubjectClick = { },
@@ -155,10 +149,7 @@ private fun FluidSlidingNavBar(
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = {
-                                    haptics.tap()
-                                    onTabSelected(tab)
-                                },
+                                onClick = { onTabSelected(tab) },
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
@@ -167,6 +158,7 @@ private fun FluidSlidingNavBar(
                             imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
                             contentDescription = tab.label,
                             modifier = Modifier.size(22.dp),
+                            // Selected icon sits on secondaryContainer pill → use onSecondaryContainer
                             tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
@@ -174,7 +166,8 @@ private fun FluidSlidingNavBar(
                         Text(
                             text = tab.label,
                             fontSize = 11.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                            // Fix: selected text also uses onSecondaryContainer for contrast on pill
+                            color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
                     }

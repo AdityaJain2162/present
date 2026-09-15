@@ -4,7 +4,8 @@ enum class ThemeMode {
     SYSTEM,
     LIGHT,
     DARK,
-    AMOLED;
+    AMOLED,
+    CUSTOM;
 
     companion object {
         fun fromOrdinalSafe(value: Int): ThemeMode =

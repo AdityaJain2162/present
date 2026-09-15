@@ -164,6 +164,48 @@ fun hctDarkScheme(seed: Color): ColorScheme {
 val LocalAccentPreset = compositionLocalOf { AccentPresets[0] }
 val LocalAnimationsEnabled = compositionLocalOf { true }
 
+// ── Pastel (CUSTOM) color scheme ──────────────────────────────────
+// Cool pastel palette that looks the same in any lighting — designed
+// for the new generation aesthetic. Soft lavender/mint/peach on cream.
+private fun pastelColorScheme(): ColorScheme = lightColorScheme(
+    primary = Color(0xFF7C5CB8),         // soft purple
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFEADDFF),
+    onPrimaryContainer = Color(0xFF21005D),
+    secondary = Color(0xFF5BA88A),       // mint green
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFC8F0DC),
+    onSecondaryContainer = Color(0xFF003820),
+    tertiary = Color(0xFFE89B7A),        // warm peach
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFDCC8),
+    onTertiaryContainer = Color(0xFF3A1700),
+    error = Color(0xFFE07070),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFAF5FF),      // lavender cream
+    onBackground = Color(0xFF1C1B1F),
+    surface = Color(0xFFFAF5FF),
+    onSurface = Color(0xFF1C1B1F),
+    surfaceVariant = Color(0xFFE7E0EB),
+    onSurfaceVariant = Color(0xFF49454E),
+    surfaceContainer = Color(0xFFF3EDF7),
+    surfaceContainerLow = Color(0xFFF7F2FA),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerHigh = Color(0xFFECE6F0),
+    surfaceContainerHighest = Color(0xFFE6E0E9),
+    surfaceBright = Color(0xFFFEF7FF),
+    surfaceDim = Color(0xFFDED8E0),
+    outline = Color(0xFF7A757E),
+    outlineVariant = Color(0xFFCAC4CF),
+    scrim = Color(0xFF000000),
+    surfaceTint = Color(0xFF7C5CB8),
+    inverseSurface = Color(0xFF313033),
+    inverseOnSurface = Color(0xFFF4EFF4),
+    inversePrimary = Color(0xFFCFBCFF),
+)
+
 @Composable
 fun PresentTheme(
     themeMode: com.aditya.present.domain.ThemeMode = com.aditya.present.domain.ThemeMode.SYSTEM,
@@ -176,6 +218,9 @@ fun PresentTheme(
     val preset = accentPresetByName(accentName)
 
     val targetScheme = when (themeMode) {
+        com.aditya.present.domain.ThemeMode.CUSTOM -> {
+            pastelColorScheme()
+        }
         com.aditya.present.domain.ThemeMode.SYSTEM -> {
             val isDark = isSystemInDarkTheme()
             if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
