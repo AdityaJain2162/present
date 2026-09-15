@@ -300,8 +300,10 @@ fun TimetableScreen(
             subjects = uiState.subjects,
             selectedDay = selectedDay,
             onDismiss = { showAddSlot = false },
-            onAdd = { subjectId, startTimeMinutes, units ->
-                viewModel.addSlot(subjectId, selectedDay + 1, startTimeMinutes, units)
+            onAdd = { subjectId, startTimeMinutes, units, days ->
+                days.forEach { dayOfWeek ->
+                    viewModel.addSlot(subjectId, dayOfWeek, startTimeMinutes, units)
+                }
                 showAddSlot = false
             },
         )
@@ -522,7 +524,7 @@ private fun AddSlotDialog(
     subjects: List<SubjectEntity>,
     selectedDay: Int,
     onDismiss: () -> Unit,
-    onAdd: (subjectId: Long, startTimeMinutes: Int, units: Int) -> Unit,
+    onAdd: (subjectId: Long, startTimeMinutes: Int, units: Int, days: List<Int>) -> Unit,
 ) {
     val haptics = LocalHaptics.current
     val accentPreset = LocalAccentPreset.current
@@ -536,6 +538,10 @@ private fun AddSlotDialog(
     var useCustomDuration by remember { mutableStateOf(false) }
 
     val dayNames = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    val dayShortNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+    // Multi-select days — pre-select the day the user was viewing
+    var selectedDays by remember { mutableStateOf(setOf(selectedDay)) }
 
     val effectiveUnits = if (useCustomDuration && customDuration.isNotBlank()) {
         customDuration.toIntOrNull()?.coerceAtLeast(1) ?: 1
@@ -576,17 +582,39 @@ private fun AddSlotDialog(
                         tint = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        stringResource(R.string.timetable_day_label, dayNames[selectedDay]),
+                        stringResource(R.string.timetable_repeats_weekly),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
+
+                // Day selector — multi-select chips
                 Text(
-                    stringResource(R.string.timetable_repeats_weekly),
-                    style = MaterialTheme.typography.bodySmall,
+                    stringResource(R.string.timetable_select_days),
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    dayShortNames.forEachIndexed { index, dayName ->
+                        FilterChip(
+                            selected = index in selectedDays,
+                            onClick = {
+                                haptics.tap()
+                                selectedDays = if (index in selectedDays) {
+                                    selectedDays - index
+                                } else {
+                                    selectedDays + index
+                                }
+                            },
+                            label = { Text(dayName, fontSize = 11.sp) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
 
                 // Subject dropdown
                 ExposedDropdownMenuBox(
@@ -731,10 +759,14 @@ private fun AddSlotDialog(
                 onClick = {
                     selectedSubject?.let { subject ->
                         val minutes = selectedHour * 60 + selectedMinute
-                        onAdd(subject.id, minutes, effectiveUnits)
+                        // Convert 0-6 (UI) to 1-7 (Calendar.DAY_OF_WEEK)
+                        val days = selectedDays.sorted().map { it + 1 }
+                        onAdd(subject.id, minutes, effectiveUnits, days)
                     }
                 },
-                enabled = selectedSubject != null && (!useCustomDuration || customDuration.isNotBlank()),
+                enabled = selectedSubject != null &&
+                    selectedDays.isNotEmpty() &&
+                    (!useCustomDuration || customDuration.isNotBlank()),
             ) { Text(stringResource(R.string.timetable_add)) }
         },
         dismissButton = {

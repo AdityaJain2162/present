@@ -98,6 +98,7 @@
     <string name="timetable_add_class_slot">Add Recurring Class</string>
     <string name="timetable_day_label">Every %1$s</string>
     <string name="timetable_repeats_weekly">Repeats weekly for the entire semester</string>
+    <string name="timetable_select_days">Days</string>
     <string name="timetable_subject">Subject</string>
     <string name="timetable_select">Select</string>
     <string name="timetable_start_time">Start time</string>
@@ -295,4 +296,11 @@
     <!-- Timetable (extended) -->
     <string name="timetable_hr">%1$d hr</string>
     <string name="timetable_custom">Custom</string>
+
+    <!-- Subject card labels -->
+    <string name="subject_target_label">Target: %1$d%%</string>
+    <string name="subject_attended_label">Attended: %1$d / %2$d classes</string>
+
+    <!-- Low attendance banner -->
+    <string name="below_target_attendance">Below target attendance</string>
 </resources>

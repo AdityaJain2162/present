@@ -200,12 +200,12 @@ private fun SubjectCardContent(
         if (expanded) {
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Target: ${subject.targetAttendancePercent.toInt()}%",
+                text = stringResource(R.string.subject_target_label, subject.targetAttendancePercent.toInt()),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Attended: $attendedUnits / $totalUnits classes",
+                text = stringResource(R.string.subject_attended_label, attendedUnits, totalUnits),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
