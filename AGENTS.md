@@ -170,10 +170,13 @@ can lift it.
 - Test app ID: `ca-app-pub-3940256099942544~3347511713`
 - Test banner: `ca-app-pub-3940256099942544/6300978111`
 - `MobileAds.initialize()` in `PresentApplication.onCreate()`
-- **Maximum coverage** — banner on every screen: Home, Calendar, Timetable,
-  Sessions, About, Settings, Add/Edit Subject, Onboarding
-- Banner is the last item in the screen's scrollable content so it never
-  covers or pushes actionable content, FAB, or bottom navigation
+- Test device ID registered in `PresentApplication` so test ads render
+- **Main tabs** (Home, Calendar, Timetable, Settings): single pinned
+  `BannerAd` in `MainScreen` wrapping the `HorizontalPager` — one ad covers
+  all 4 tabs, always visible at the bottom, never scrolls with content
+- **Secondary screens** (Sessions, About, Add/Edit Subject, Onboarding):
+  pinned `BannerAd` at the bottom of the screen's own `Column`
+- Banner never covers FABs, bottom navigation, or actionable content
 - Replace test IDs before Play Store release
 
 ---

@@ -75,7 +75,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
-import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -221,7 +220,7 @@ fun TimetableScreen(
                         icon = Icons.Filled.Add,
                         title = stringResource(R.string.timetable_no_subjects),
                         subtitle = stringResource(R.string.timetable_no_subjects_desc),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
                 uiState.slotsForDay.isEmpty() -> {
@@ -229,13 +228,14 @@ fun TimetableScreen(
                         icon = Icons.Filled.Swipe,
                         title = stringResource(R.string.timetable_no_classes, dayNames[selectedDay]),
                         subtitle = stringResource(R.string.timetable_no_classes_desc),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
                 else -> {
                     LazyColumn(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 80.dp),
                     ) {
                         items(uiState.slotsForDay, key = { it.slot.id }) { timetableSlot ->
                             timetableSlot.subject?.let { subject ->
@@ -260,9 +260,6 @@ fun TimetableScreen(
                     }
                 }
             }
-
-            // AdMob banner pinned at the bottom — always visible
-            BannerAd()
         }
     }
 

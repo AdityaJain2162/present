@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.ThemeMode
-import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.AccentPresets
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -85,19 +84,14 @@ fun SettingsScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+                .fillMaxWidth()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                // ── Appearance ──
-                SettingsCard(title = stringResource(R.string.settings_appearance)) {
+            // ── Appearance ──
+            SettingsCard(title = stringResource(R.string.settings_appearance)) {
                 Column(modifier = Modifier.selectableGroup()) {
                     ThemeMode.entries.forEach { mode ->
                         Row(
@@ -470,10 +464,6 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // AdMob banner pinned at the bottom — always visible
-            BannerAd()
         }
     }
 }

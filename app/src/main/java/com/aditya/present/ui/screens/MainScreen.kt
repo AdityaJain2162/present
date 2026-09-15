@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.navigation.Tab
 import com.aditya.present.ui.theme.LocalHaptics
 import kotlinx.coroutines.launch
@@ -78,21 +79,25 @@ fun MainScreen(
             )
         }
     ) { padding ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize().padding(padding),
-            beyondViewportPageCount = 0,
-        ) { page ->
-            when (tabs[page]) {
-                Tab.HOME -> HomeScreen(
-                    onAddSubject = onAddSubject,
-                    onSubjectClick = { },
-                    onManageSessions = onSessions,
-                )
-                Tab.CALENDAR -> CalendarScreen()
-                Tab.TIMETABLE -> TimetableScreen()
-                Tab.SETTINGS -> SettingsScreen(onAbout = onAbout)
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f),
+                beyondViewportPageCount = 0,
+            ) { page ->
+                when (tabs[page]) {
+                    Tab.HOME -> HomeScreen(
+                        onAddSubject = onAddSubject,
+                        onSubjectClick = { },
+                        onManageSessions = onSessions,
+                    )
+                    Tab.CALENDAR -> CalendarScreen()
+                    Tab.TIMETABLE -> TimetableScreen()
+                    Tab.SETTINGS -> SettingsScreen(onAbout = onAbout)
+                }
             }
+            // Pinned banner ad — always visible across all 4 main tabs
+            BannerAd()
         }
     }
 }

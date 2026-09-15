@@ -61,7 +61,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.components.AttendanceMarkSheet
-import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
@@ -211,22 +210,21 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when {
-                uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
                 }
-                uiState.subjects.isEmpty() -> {
-                    EmptyState(
+            }
+            uiState.subjects.isEmpty() -> {
+                EmptyState(
                     icon = Icons.Filled.Add,
                     title = stringResource(R.string.home_welcome_title),
                     subtitle = stringResource(R.string.home_welcome_subtitle),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize().padding(padding),
                     action = {
                         TextButton(
                             onClick = {
@@ -244,9 +242,9 @@ fun HomeScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier.weight(1f).padding(padding),
+                    modifier = Modifier.fillMaxSize().padding(padding),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp
+                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -290,12 +288,9 @@ fun HomeScreen(
 
                 }
             }
-            }
-
-            // AdMob banner pinned at the bottom — always visible
-            BannerAd()
         }
     }
+
     // Attendance marking bottom sheet
     markingSubject?.let { subject ->
         AttendanceMarkSheet(
