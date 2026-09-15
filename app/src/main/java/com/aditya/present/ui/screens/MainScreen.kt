@@ -141,11 +141,11 @@ private fun FloatingNavBar(
                 )
                 .clip(PillShape)
                 .background(barColor)
-                .height(64.dp),
+                .height(68.dp),
         ) {
             val tabWidth = maxWidth / tabs.size
-            val pillWidth = (tabWidth - 12.dp).coerceAtLeast(52.dp)
-            val pillHeight = 48.dp
+            val pillWidth = (tabWidth - 4.dp).coerceAtLeast(64.dp)
+            val pillHeight = 52.dp
 
             val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
@@ -160,7 +160,7 @@ private fun FloatingNavBar(
 
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset, y = (64.dp - pillHeight) / 2)
+                    .offset(x = indicatorOffset, y = (68.dp - pillHeight) / 2)
                     .width(pillWidth)
                     .height(pillHeight)
                     .clip(RoundedCornerShape(24.dp))
