@@ -235,4 +235,69 @@
     <string name="home_streak_current">Current</string>
     <string name="home_streak_best">Best</string>
     <string name="home_streak_perfect">Perfect</string>
+
+    <!-- Calendar day detail -->
+    <string name="calendar_delete_entry">Delete Entry</string>
+    <string name="calendar_delete_entry_confirm">Remove this attendance record? This cannot be undone.</string>
+    <string name="calendar_attendance_entries">Attendance Entries</string>
+    <string name="calendar_unknown">Unknown</string>
+    <string name="calendar_delete_entry_cd">Delete entry</string>
+
+    <!-- Sessions (extended) -->
+    <string name="sessions_delete">Delete Session</string>
+    <string name="sessions_delete_confirm">Delete \'%1$s\' and all its subjects, timetable, and attendance? This cannot be undone.</string>
+    <string name="sessions_edit_title">Edit Session</string>
+    <string name="sessions_edit_cd">Edit session</string>
+    <string name="sessions_delete_cd">Delete session</string>
+    <string name="sessions_default_semester_name">Semester</string>
+    <string name="sessions_default_year_name">Year</string>
+
+    <!-- Statistics -->
+    <string name="stats_title">Statistics</string>
+    <string name="stats_overview">Overview</string>
+    <string name="stats_streaks">Streaks</string>
+    <string name="stats_current_streak">Current Streak</string>
+    <string name="stats_best_streak">Best Streak</string>
+    <string name="stats_perfect_days">Perfect Days</string>
+    <string name="stats_subject_breakdown">Subject Breakdown</string>
+    <string name="stats_trend_title">14-Day Attendance Trend</string>
+    <string name="stats_no_data">No data yet</string>
+    <string name="stats_days">%1$d days</string>
+
+    <!-- Bunk Calculator -->
+    <string name="bunk_current_attendance">Current Attendance</string>
+    <string name="bunk_classes">%1$d / %2$d classes</string>
+    <string name="bunk_target">Target</string>
+    <string name="bunk_safe_bunks">Safe Bunks</string>
+    <string name="bunk_recovery">Recovery</string>
+    <string name="bunk_future_scenario">Future Scenario</string>
+    <string name="bunk_future_scenario_desc">Simulate future classes to see projected attendance</string>
+    <string name="bunk_classes_attend">Classes you\'ll attend: %1$d</string>
+    <string name="bunk_classes_bunk">Classes you\'ll bunk: %1$d</string>
+    <string name="bunk_projected">Projected</string>
+    <string name="bunk_no_classes">No classes recorded yet</string>
+    <string name="bunk_safe_status">You\'re safe! Can bunk %1$d more</string>
+    <string name="bunk_need_attend">Need to attend %1$d more to reach target</string>
+
+    <!-- About (extended) -->
+    <string name="about_github_subtitle">github.com/AdityaJain2162</string>
+    <string name="about_linkedin_subtitle">linkedin.com/in/adityajain2162</string>
+    <string name="about_repo_subtitle">github.com/AdityaJain2162/present</string>
+
+    <!-- Onboarding (extended) -->
+    <string name="onboarding_default_semester_name">Semester 1</string>
+    <string name="onboarding_default_year_name">Year 1</string>
+    <string name="onboarding_default_session_name">Session 1</string>
+    <string name="onboarding_semester_label">Semester</string>
+    <string name="onboarding_year_label">Year</string>
+    <string name="onboarding_feature_track_title">Track Attendance</string>
+    <string name="onboarding_feature_track_desc">Mark Present, Absent, Cancelled &amp; more</string>
+    <string name="onboarding_feature_calendar_title">Smart Calendar</string>
+    <string name="onboarding_feature_calendar_desc">Monthly view with color-coded days</string>
+    <string name="onboarding_feature_private_title">100% Private</string>
+    <string name="onboarding_feature_private_desc">No account, no cloud, fully offline</string>
+
+    <!-- Timetable (extended) -->
+    <string name="timetable_hr">%1$d hr</string>
+    <string name="timetable_custom">Custom</string>
 </resources>

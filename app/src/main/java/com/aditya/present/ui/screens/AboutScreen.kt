@@ -63,7 +63,7 @@ fun AboutScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
                 },
@@ -144,7 +144,7 @@ fun AboutScreen(
             AboutLinkCard(
                 icon = Icons.Filled.Code,
                 title = stringResource(R.string.about_github),
-                subtitle = "github.com/AdityaJain2162",
+                subtitle = stringResource(R.string.about_github_subtitle),
                 onClick = {
                     context.openUrl(context.getString(R.string.about_github_url))
                 },
@@ -153,7 +153,7 @@ fun AboutScreen(
             AboutLinkCard(
                 icon = Icons.Filled.Work,
                 title = stringResource(R.string.about_linkedin),
-                subtitle = "linkedin.com/in/adityajain2162",
+                subtitle = stringResource(R.string.about_linkedin_subtitle),
                 onClick = {
                     context.openUrl(context.getString(R.string.about_linkedin_url))
                 },
@@ -162,7 +162,7 @@ fun AboutScreen(
             AboutLinkCard(
                 icon = Icons.Filled.Code,
                 title = stringResource(R.string.about_repo),
-                subtitle = "github.com/AdityaJain2162/present",
+                subtitle = stringResource(R.string.about_repo_subtitle),
                 onClick = {
                     context.openUrl(context.getString(R.string.about_repo_url))
                 },

@@ -73,6 +73,9 @@ fun OnboardingScreen(
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
     val haptics = LocalHaptics.current
+    val defaultSemesterName = stringResource(R.string.onboarding_default_semester_name)
+    val defaultYearName = stringResource(R.string.onboarding_default_year_name)
+    val defaultSessionName = stringResource(R.string.onboarding_default_session_name)
 
     Scaffold { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -115,7 +118,7 @@ fun OnboardingScreen(
                     onSelected = {
                         haptics.confirm()
                         sessionType = it
-                        sessionName = if (it == SessionType.SEMESTER) "Semester 1" else "Year 1"
+                        sessionName = if (it == SessionType.SEMESTER) defaultSemesterName else defaultYearName
                         step = 2
                     },
                     onBack = {
@@ -135,7 +138,7 @@ fun OnboardingScreen(
                         haptics.confirm()
                         onSessionCreated(
                             sessionType ?: SessionType.SEMESTER,
-                            sessionName.ifBlank { "Session 1" },
+                            sessionName.ifBlank { defaultSessionName },
                             startDate,
                             endDate,
                             75f,
@@ -196,20 +199,20 @@ private fun WelcomeStep(onContinue: () -> Unit) {
         // Feature highlights
         FeatureHighlightRow(
             icon = "✓",
-            title = "Track Attendance",
-            desc = "Mark Present, Absent, Cancelled & more",
+            title = stringResource(R.string.onboarding_feature_track_title),
+            desc = stringResource(R.string.onboarding_feature_track_desc),
         )
         Spacer(modifier = Modifier.height(12.dp))
         FeatureHighlightRow(
             icon = "📅",
-            title = "Smart Calendar",
-            desc = "Monthly view with color-coded days",
+            title = stringResource(R.string.onboarding_feature_calendar_title),
+            desc = stringResource(R.string.onboarding_feature_calendar_desc),
         )
         Spacer(modifier = Modifier.height(12.dp))
         FeatureHighlightRow(
             icon = "🔒",
-            title = "100% Private",
-            desc = "No account, no cloud, fully offline",
+            title = stringResource(R.string.onboarding_feature_private_title),
+            desc = stringResource(R.string.onboarding_feature_private_desc),
         )
         Spacer(modifier = Modifier.height(48.dp))
         Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
@@ -345,7 +348,10 @@ private fun SessionDetailsStep(
     onCreate: () -> Unit,
     onBack: () -> Unit,
 ) {
-    val typeLabel = if (sessionType == SessionType.SEMESTER) "Semester" else "Year"
+    val typeLabel = stringResource(
+        if (sessionType == SessionType.SEMESTER) R.string.onboarding_semester_label
+        else R.string.onboarding_year_label
+    )
     val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
 
     var showStartPicker by remember { mutableStateOf(false) }

@@ -395,16 +395,16 @@ private fun DayDetailSheet(
     if (deleteTarget != null) {
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            title = { Text("Delete Entry") },
-            text = { Text("Remove this attendance record? This cannot be undone.") },
+            title = { Text(stringResource(R.string.calendar_delete_entry)) },
+            text = { Text(stringResource(R.string.calendar_delete_entry_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     onDelete(deleteTarget!!)
                     deleteTarget = null
-                }) { Text("Delete") }
+                }) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { deleteTarget = null }) { Text("Cancel") }
+                TextButton(onClick = { deleteTarget = null }) { Text(stringResource(R.string.cancel)) }
             },
         )
     }
@@ -418,7 +418,7 @@ private fun DayDetailSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp),
         ) {
             Text(
-                text = "Attendance Entries",
+                text = stringResource(R.string.calendar_attendance_entries),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
@@ -428,7 +428,7 @@ private fun DayDetailSheet(
                 val status = runCatching {
                     AttendanceStatus.valueOf(entry.attendance.status)
                 }.getOrNull()
-                val subjectName = entry.subject?.name ?: "Unknown"
+                val subjectName = entry.subject?.name ?: stringResource(R.string.calendar_unknown)
                 val subjectColor = entry.subject?.color ?: 0xFF9E9E9E.toInt()
 
                 Card(
@@ -464,7 +464,7 @@ private fun DayDetailSheet(
                             }) {
                                 Icon(
                                     Icons.Filled.Delete,
-                                    contentDescription = "Delete entry",
+                                    contentDescription = stringResource(R.string.calendar_delete_entry_cd),
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             }
@@ -476,6 +476,13 @@ private fun DayDetailSheet(
                         ) {
                             AttendanceStatus.entries.forEach { statusOption ->
                                 val isSelected = status == statusOption
+                                val statusLabelRes = when (statusOption) {
+                                    AttendanceStatus.PRESENT -> R.string.status_present
+                                    AttendanceStatus.ABSENT -> R.string.status_absent
+                                    AttendanceStatus.CANCELLED -> R.string.status_cancelled
+                                    AttendanceStatus.HOLIDAY -> R.string.status_holiday
+                                    AttendanceStatus.ON_DUTY -> R.string.status_on_duty
+                                }
                                 FilterChip(
                                     selected = isSelected,
                                     onClick = {
@@ -484,7 +491,7 @@ private fun DayDetailSheet(
                                     },
                                     label = {
                                         Text(
-                                            statusOption.name.lowercase().replaceFirstChar { it.uppercase() },
+                                            stringResource(statusLabelRes),
                                             fontSize = 11.sp,
                                         )
                                     },

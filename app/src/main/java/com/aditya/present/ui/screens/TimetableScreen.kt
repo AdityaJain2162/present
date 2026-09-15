@@ -633,7 +633,7 @@ private fun AddSlotDialog(
                                 useCustomDuration = false
                                 units = u
                             },
-                            label = { Text("$u hr") },
+                            label = { Text(stringResource(R.string.timetable_hr, u)) },
                         )
                     }
                     FilterChip(
@@ -642,7 +642,7 @@ private fun AddSlotDialog(
                             haptics.tap()
                             useCustomDuration = true
                         },
-                        label = { Text("Custom") },
+                        label = { Text(stringResource(R.string.timetable_custom)) },
                     )
                 }
                 if (useCustomDuration) {

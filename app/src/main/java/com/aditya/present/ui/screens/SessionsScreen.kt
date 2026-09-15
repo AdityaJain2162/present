@@ -157,20 +157,20 @@ fun SessionsScreen(
                     if (showDeleteConfirm) {
                         AlertDialog(
                             onDismissRequest = { showDeleteConfirm = false },
-                            title = { Text("Delete Session") },
+                            title = { Text(stringResource(R.string.sessions_delete)) },
                             text = {
                                 Text(
-                                    "Delete '${sessionWithStats.session.name}' and all its subjects, timetable, and attendance? This cannot be undone.",
+                                    stringResource(R.string.sessions_delete_confirm, sessionWithStats.session.name),
                                 )
                             },
                             confirmButton = {
                                 TextButton(onClick = {
                                     viewModel.deleteSession(sessionWithStats.session)
                                     showDeleteConfirm = false
-                                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                                }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
                             },
                             dismissButton = {
-                                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+                                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) }
                             },
                         )
                     }
@@ -243,7 +243,7 @@ private fun SessionCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         Icons.Filled.Edit,
-                        contentDescription = "Edit session",
+                        contentDescription = stringResource(R.string.sessions_edit_cd),
                         tint = if (session.isActive)
                             MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -252,7 +252,7 @@ private fun SessionCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = "Delete session",
+                        contentDescription = stringResource(R.string.sessions_delete_cd),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -311,6 +311,8 @@ private fun CreateSessionDialog(
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
     val dateFmt = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+    val defaultSemesterName = stringResource(R.string.sessions_default_semester_name)
+    val defaultYearName = stringResource(R.string.sessions_default_year_name)
 
     if (showStartPicker) {
         val state = rememberDatePickerState(initialSelectedDateMillis = startDate)
@@ -397,7 +399,9 @@ private fun CreateSessionDialog(
             TextButton(
                 onClick = {
                     onCreate(
-                        name.ifBlank { if (sessionType == SessionType.SEMESTER) "Semester" else "Year" },
+                        name.ifBlank {
+                            if (sessionType == SessionType.SEMESTER) defaultSemesterName else defaultYearName
+                        },
                         sessionType,
                         startDate,
                         endDate,
@@ -428,6 +432,8 @@ private fun EditSessionDialog(
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
     val dateFmt = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+    val defaultSemesterName = stringResource(R.string.sessions_default_semester_name)
+    val defaultYearName = stringResource(R.string.sessions_default_year_name)
 
     if (showStartPicker) {
         val state = rememberDatePickerState(initialSelectedDateMillis = startDate)
@@ -463,7 +469,7 @@ private fun EditSessionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Session") },
+        title = { Text(stringResource(R.string.sessions_edit_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -514,14 +520,16 @@ private fun EditSessionDialog(
             TextButton(
                 onClick = {
                     onUpdate(
-                        name.ifBlank { if (sessionType == SessionType.SEMESTER) "Semester" else "Year" },
+                        name.ifBlank {
+                            if (sessionType == SessionType.SEMESTER) defaultSemesterName else defaultYearName
+                        },
                         sessionType,
                         startDate,
                         endDate,
                         session.targetAttendancePercent,
                     )
                 },
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.save_subject)) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }

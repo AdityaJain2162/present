@@ -39,9 +39,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.theme.LocalAccentPreset
 
@@ -57,10 +59,10 @@ fun StatsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = { Text(stringResource(R.string.stats_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -75,24 +77,24 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Overview stats
-            StatsCard(title = "Overview") {
-                StatRow("Overall", "${uiState.overallAttended}/${uiState.overallTotal}",
+            StatsCard(title = stringResource(R.string.stats_overview)) {
+                StatRow(stringResource(R.string.home_period_overall), "${uiState.overallAttended}/${uiState.overallTotal}",
                     if (uiState.overallTotal > 0) "${(uiState.overallAttended.toFloat() / uiState.overallTotal * 100).toInt()}%" else "--%")
-                StatRow("This Month", "${uiState.monthlyAttended}/${uiState.monthlyTotal}",
+                StatRow(stringResource(R.string.home_period_this_month), "${uiState.monthlyAttended}/${uiState.monthlyTotal}",
                     if (uiState.monthlyTotal > 0) "${(uiState.monthlyAttended.toFloat() / uiState.monthlyTotal * 100).toInt()}%" else "--%")
-                StatRow("This Week", "${uiState.weeklyAttended}/${uiState.weeklyTotal}",
+                StatRow(stringResource(R.string.home_period_this_week), "${uiState.weeklyAttended}/${uiState.weeklyTotal}",
                     if (uiState.weeklyTotal > 0) "${(uiState.weeklyAttended.toFloat() / uiState.weeklyTotal * 100).toInt()}%" else "--%")
             }
 
             // Streak stats
-            StatsCard(title = "Streaks") {
-                StatRow("Current Streak", "${uiState.currentStreak} days", "")
-                StatRow("Best Streak", "${uiState.bestStreak} days", "")
-                StatRow("Perfect Days", "${uiState.perfectDays}", "")
+            StatsCard(title = stringResource(R.string.stats_streaks)) {
+                StatRow(stringResource(R.string.stats_current_streak), stringResource(R.string.stats_days, uiState.currentStreak), "")
+                StatRow(stringResource(R.string.stats_best_streak), stringResource(R.string.stats_days, uiState.bestStreak), "")
+                StatRow(stringResource(R.string.stats_perfect_days), "${uiState.perfectDays}", "")
             }
 
             // Per-subject breakdown
-            StatsCard(title = "Subject Breakdown") {
+            StatsCard(title = stringResource(R.string.stats_subject_breakdown)) {
                 uiState.subjects.forEach { subject ->
                     Row(
                         modifier = Modifier
@@ -133,7 +135,7 @@ fun StatsScreen(
             }
 
             // Attendance trend chart (last 14 days)
-            StatsCard(title = "14-Day Attendance Trend") {
+            StatsCard(title = stringResource(R.string.stats_trend_title)) {
                 TrendChart(
                     data = uiState.trendData,
                     color = accentPreset.gradientStart,
@@ -223,7 +225,7 @@ private fun TrendChart(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "No data yet",
+                text = stringResource(R.string.stats_no_data),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

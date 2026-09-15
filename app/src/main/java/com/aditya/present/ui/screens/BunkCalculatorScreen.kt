@@ -42,9 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aditya.present.R
 import com.aditya.present.domain.BunkCalculator
 import com.aditya.present.ui.components.BunkCalculatorHelper
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -80,10 +82,10 @@ fun BunkCalculatorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bunk Calculator") },
+                title = { Text(stringResource(R.string.subject_bunk_calculator)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -126,7 +128,7 @@ fun BunkCalculatorScreen(
                         .fillMaxWidth()
                         .padding(20.dp),
                 ) {
-                    Text("Current Attendance", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.bunk_current_attendance), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -143,7 +145,7 @@ fun BunkCalculatorScreen(
                                 MaterialTheme.colorScheme.error,
                         )
                         Text(
-                            text = "$attendedUnits / $totalUnits classes",
+                            text = stringResource(R.string.bunk_classes, attendedUnits, totalUnits),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -153,9 +155,9 @@ fun BunkCalculatorScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        StatLabel("Target", "${targetPercent.toInt()}%")
-                        StatLabel("Safe Bunks", "${result.safeBunks}")
-                        StatLabel("Recovery", "${result.recoveryNeeded}")
+                        StatLabel(stringResource(R.string.bunk_target), "${targetPercent.toInt()}%")
+                        StatLabel(stringResource(R.string.bunk_safe_bunks), "${result.safeBunks}")
+                        StatLabel(stringResource(R.string.bunk_recovery), "${result.recoveryNeeded}")
                     }
                 }
             }
@@ -173,9 +175,9 @@ fun BunkCalculatorScreen(
                         .fillMaxWidth()
                         .padding(20.dp),
                 ) {
-                    Text("Future Scenario", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.bunk_future_scenario), style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Simulate future classes to see projected attendance",
+                        stringResource(R.string.bunk_future_scenario_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -183,7 +185,7 @@ fun BunkCalculatorScreen(
 
                     // Future classes to attend
                     Text(
-                        "Classes you'll attend: ${futureClasses.toInt()}",
+                        stringResource(R.string.bunk_classes_attend, futureClasses.toInt()),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                     )
@@ -197,7 +199,7 @@ fun BunkCalculatorScreen(
 
                     // Future classes to bunk
                     Text(
-                        "Classes you'll bunk: ${futureBunks.toInt()}",
+                        stringResource(R.string.bunk_classes_bunk, futureBunks.toInt()),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                     )
@@ -229,7 +231,7 @@ fun BunkCalculatorScreen(
                         ) {
                             Column {
                                 Text(
-                                    "Projected",
+                                    stringResource(R.string.bunk_projected),
                                     color = Color.White.copy(alpha = 0.8f),
                                     fontSize = 13.sp,
                                 )
@@ -240,7 +242,7 @@ fun BunkCalculatorScreen(
                                     color = Color.White,
                                 )
                                 Text(
-                                    "$projectedAttended / $projectedTotal classes",
+                                    stringResource(R.string.bunk_classes, projectedAttended, projectedTotal),
                                     color = Color.White.copy(alpha = 0.8f),
                                     fontSize = 13.sp,
                                 )
@@ -258,9 +260,15 @@ fun BunkCalculatorScreen(
 
                     // Status message
                     val statusText = when {
-                        projectedTotal == 0 -> "No classes recorded yet"
-                        projectedPct >= target -> "You're safe! Can bunk ${BunkCalculatorHelper.classesCanBunk(projectedAttended, projectedTotal, target)} more"
-                        else -> "Need to attend ${BunkCalculatorHelper.classesToAttend(projectedAttended, projectedTotal, target)} more to reach target"
+                        projectedTotal == 0 -> stringResource(R.string.bunk_no_classes)
+                        projectedPct >= target -> stringResource(
+                            R.string.bunk_safe_status,
+                            BunkCalculatorHelper.classesCanBunk(projectedAttended, projectedTotal, target),
+                        )
+                        else -> stringResource(
+                            R.string.bunk_need_attend,
+                            BunkCalculatorHelper.classesToAttend(projectedAttended, projectedTotal, target),
+                        )
                     }
                     Text(
                         text = statusText,
