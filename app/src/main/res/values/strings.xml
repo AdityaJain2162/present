@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Present</string>
+    <string name="add_subject">Add Subject</string>
+    <string name="empty_state_title">No subjects yet</string>
+    <string name="empty_state_subtitle">Tap "Add Subject" to start tracking your attendance</string>
+</resources>
