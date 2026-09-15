@@ -86,6 +86,7 @@ fun HomeScreen(
     onAddSubject: (Long) -> Unit,
     onSubjectClick: (Long) -> Unit,
     onManageSessions: () -> Unit = {},
+    onBunkCalculator: (Long, String, Int, Int, Int, Float) -> Unit = { _, _, _, _, _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -334,6 +335,17 @@ fun HomeScreen(
                                 onClick = {
                                     haptics.tap()
                                     markingSubject = subjectWithAtt
+                                },
+                                onBunkCalculator = {
+                                    haptics.tap()
+                                    onBunkCalculator(
+                                        subjectWithAtt.subject.id,
+                                        subjectWithAtt.subject.name,
+                                        subjectWithAtt.subject.color,
+                                        subjectWithAtt.attendedUnits,
+                                        subjectWithAtt.totalUnits,
+                                        subjectWithAtt.subject.targetAttendancePercent,
+                                    )
                                 },
                             )
                         }

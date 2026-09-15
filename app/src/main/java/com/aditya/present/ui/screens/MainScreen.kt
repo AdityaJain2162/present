@@ -57,6 +57,7 @@ fun MainScreen(
     onAddSubject: (Long) -> Unit,
     onAbout: () -> Unit = {},
     onSessions: () -> Unit = {},
+    onBunkCalculator: (Long, String, Int, Int, Int, Float) -> Unit = { _, _, _, _, _, _ -> },
 ) {
     val tabs = Tab.entries
     val haptics = LocalHaptics.current
@@ -96,6 +97,7 @@ fun MainScreen(
                         onAddSubject = onAddSubject,
                         onSubjectClick = { },
                         onManageSessions = onSessions,
+                        onBunkCalculator = onBunkCalculator,
                     )
                     Tab.CALENDAR -> CalendarScreen()
                     Tab.TIMETABLE -> TimetableScreen()

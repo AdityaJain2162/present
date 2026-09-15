@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aditya.present.ui.screens.AboutScreen
 import com.aditya.present.ui.screens.AddEditSubjectScreen
+import com.aditya.present.ui.screens.BunkCalculatorScreen
 import com.aditya.present.ui.screens.MainScreen
 import com.aditya.present.ui.screens.OnboardingScreen
 import com.aditya.present.ui.screens.OnboardingViewModel
@@ -29,9 +30,18 @@ object Routes {
     const val SESSIONS = "sessions"
     const val ADD_SUBJECT = "add_subject/{sessionId}"
     const val EDIT_SUBJECT = "edit_subject/{sessionId}/{subjectId}"
+    const val BUNK_CALCULATOR = "bunk/{subjectId}/{subjectName}/{subjectColor}/{attended}/{total}/{target}"
 
     fun addSubject(sessionId: Long) = "add_subject/$sessionId"
     fun editSubject(sessionId: Long, subjectId: Long) = "edit_subject/$sessionId/$subjectId"
+    fun bunkCalculator(
+        subjectId: Long,
+        subjectName: String,
+        subjectColor: Int,
+        attended: Int,
+        total: Int,
+        target: Float,
+    ) = "bunk/$subjectId/$subjectName/$subjectColor/$attended/$total/$target"
 }
 
 @Composable
@@ -81,6 +91,11 @@ fun PresentNavHost(
                 onSessions = {
                     navController.navigate(Routes.SESSIONS)
                 },
+                onBunkCalculator = { subjectId, name, color, attended, total, target ->
+                    navController.navigate(
+                        Routes.bunkCalculator(subjectId, name, color, attended, total, target)
+                    )
+                },
             )
         }
 
@@ -122,6 +137,27 @@ fun PresentNavHost(
                 subjectId = subjectId,
                 onBack = { navController.popBackStack() },
                 onSaved = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = Routes.BUNK_CALCULATOR,
+            arguments = listOf(
+                navArgument("subjectId") { type = NavType.LongType },
+                navArgument("subjectName") { type = NavType.StringType },
+                navArgument("subjectColor") { type = NavType.IntType },
+                navArgument("attended") { type = NavType.IntType },
+                navArgument("total") { type = NavType.IntType },
+                navArgument("target") { type = NavType.FloatType },
+            ),
+        ) { backStackEntry ->
+            BunkCalculatorScreen(
+                subjectName = backStackEntry.arguments?.getString("subjectName") ?: "",
+                subjectColor = backStackEntry.arguments?.getInt("subjectColor") ?: 0xFF6750A4.toInt(),
+                attendedUnits = backStackEntry.arguments?.getInt("attended") ?: 0,
+                totalUnits = backStackEntry.arguments?.getInt("total") ?: 0,
+                targetPercent = backStackEntry.arguments?.getFloat("target") ?: 75f,
+                onBack = { navController.popBackStack() },
             )
         }
     }
