@@ -22,12 +22,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +45,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.aditya.present.R
 import com.aditya.present.domain.SessionType
 import com.aditya.present.ui.theme.CardShape
@@ -56,6 +63,10 @@ fun OnboardingScreen(
     var step by remember { mutableStateOf(0) }
     var sessionType by remember { mutableStateOf<SessionType?>(null) }
     var sessionName by remember { mutableStateOf("") }
+    var startDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    var endDate by remember {
+        mutableStateOf(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 180)
+    }
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
 
@@ -83,15 +94,17 @@ fun OnboardingScreen(
                 2 -> SessionDetailsStep(
                     sessionType = sessionType ?: SessionType.SEMESTER,
                     sessionName = sessionName,
+                    startDate = startDate,
+                    endDate = endDate,
                     onNameChange = { sessionName = it },
+                    onStartDateChange = { startDate = it },
+                    onEndDateChange = { endDate = it },
                     onCreate = {
-                        val now = System.currentTimeMillis()
-                        val sixMonths = 1000L * 60 * 60 * 24 * 180
                         onSessionCreated(
                             sessionType ?: SessionType.SEMESTER,
                             sessionName.ifBlank { "Session 1" },
-                            now,
-                            now + sixMonths,
+                            startDate,
+                            endDate,
                             75f,
                         )
                     },
@@ -235,15 +248,56 @@ private fun SessionTypeStep(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SessionDetailsStep(
     sessionType: SessionType,
     sessionName: String,
+    startDate: Long,
+    endDate: Long,
     onNameChange: (String) -> Unit,
+    onStartDateChange: (Long) -> Unit,
+    onEndDateChange: (Long) -> Unit,
     onCreate: () -> Unit,
     onBack: () -> Unit,
 ) {
     val typeLabel = if (sessionType == SessionType.SEMESTER) "Semester" else "Year"
+    val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+
+    if (showStartPicker) {
+        val state = rememberDatePickerState(initialSelectedDateMillis = startDate)
+        DatePickerDialog(
+            onDismissRequest = { showStartPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { onStartDateChange(it) }
+                    showStartPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartPicker = false }) { Text("Cancel") }
+            },
+        ) { DatePicker(state = state) }
+    }
+
+    if (showEndPicker) {
+        val state = rememberDatePickerState(initialSelectedDateMillis = endDate)
+        DatePickerDialog(
+            onDismissRequest = { showEndPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { onEndDateChange(it) }
+                    showEndPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEndPicker = false }) { Text("Cancel") }
+            },
+        ) { DatePicker(state = state) }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -263,9 +317,33 @@ private fun SessionDetailsStep(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Start date picker button
+        OutlinedButton(
+            onClick = { showStartPicker = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "Start: ${dateFormat.format(Date(startDate))}",
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // End date picker button
+        OutlinedButton(
+            onClick = { showEndPicker = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "End: ${dateFormat.format(Date(endDate))}",
+                modifier = Modifier.weight(1f),
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Target attendance: 75%\nDates: Today — 6 months from now\n(You can change these later in Settings)",
+            text = "Target attendance: 75%\n(You can change these later in Settings)",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

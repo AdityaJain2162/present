@@ -30,8 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,8 +53,16 @@ fun MainScreen(
     val haptics = LocalHaptics.current
     val scope = rememberCoroutineScope()
 
-    // Pager state drives both swipe and tab selection
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+
+    // Haptic feedback when page changes via swipe
+    var lastPage by remember { mutableStateOf(0) }
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage != lastPage) {
+            haptics.tap()
+            lastPage = pagerState.currentPage
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -107,11 +117,12 @@ private fun FluidSlidingNavBar(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
                 .background(barColor)
-                .height(64.dp),
+                .height(60.dp),
         ) {
             val tabWidth = maxWidth / tabs.size
-            val pillWidth = 48.dp
-            val pillHeight = 32.dp
+            // Pill covers most of the tab width and full height minus padding
+            val pillWidth = (tabWidth - 8.dp).coerceAtLeast(48.dp)
+            val pillHeight = 44.dp
 
             val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
@@ -124,13 +135,13 @@ private fun FluidSlidingNavBar(
                 label = "PillSlider",
             )
 
-            // Sliding pill indicator
+            // Sliding pill indicator — covers full tab area
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset, y = 16.dp)
+                    .offset(x = indicatorOffset, y = (60.dp - pillHeight) / 2)
                     .width(pillWidth)
                     .height(pillHeight)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(20.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer),
             )
 
@@ -158,7 +169,6 @@ private fun FluidSlidingNavBar(
                             imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
                             contentDescription = tab.label,
                             modifier = Modifier.size(22.dp),
-                            // Selected icon sits on secondaryContainer pill → use onSecondaryContainer
                             tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
@@ -166,7 +176,6 @@ private fun FluidSlidingNavBar(
                         Text(
                             text = tab.label,
                             fontSize = 11.sp,
-                            // Fix: selected text also uses onSecondaryContainer for contrast on pill
                             color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )

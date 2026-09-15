@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.ui.components.EmptyState
@@ -121,11 +126,13 @@ fun HomeScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    // Gradient header card with overall attendance
+                    // Gradient header card with attendance + period selector
                     item {
                         OverallAttendanceCard(
                             subjectCount = uiState.subjects.size,
                             sessionName = uiState.activeSession?.name ?: "",
+                            sessionStart = uiState.activeSession?.startDate ?: 0L,
+                            sessionEnd = uiState.activeSession?.endDate ?: 0L,
                         )
                     }
 
@@ -156,8 +163,19 @@ fun HomeScreen(
 private fun OverallAttendanceCard(
     subjectCount: Int,
     sessionName: String,
+    sessionStart: Long,
+    sessionEnd: Long,
 ) {
     val accentPreset = LocalAccentPreset.current
+    val dateFormat = remember { java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault()) }
+    var selectedPeriod by remember { mutableStateOf(0) } // 0=Overall, 1=Monthly, 2=Weekly
+    val haptics = com.aditya.present.ui.theme.LocalHaptics.current
+
+    val periodLabel = when (selectedPeriod) {
+        1 -> "This Month"
+        2 -> "This Week"
+        else -> "Overall"
+    }
 
     Box(
         modifier = Modifier
@@ -173,13 +191,43 @@ private fun OverallAttendanceCard(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
             )
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Period selector chips
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Overall", "Monthly", "Weekly").forEachIndexed { index, label ->
+                    androidx.compose.material3.FilterChip(
+                        selected = selectedPeriod == index,
+                        onClick = {
+                            haptics.tap()
+                            selectedPeriod = index
+                        },
+                        label = { Text(label, fontSize = 12.sp) },
+                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "--%",
+                text = "$periodLabel: --%",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary,
             )
             Spacer(modifier = Modifier.height(4.dp))
+
+            if (sessionStart > 0 && sessionEnd > 0) {
+                Text(
+                    text = "${dateFormat.format(java.util.Date(sessionStart))} — ${dateFormat.format(java.util.Date(sessionEnd))}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
             Text(
                 text = "$subjectCount ${if (subjectCount == 1) "subject" else "subjects"} • Tap a subject to mark attendance",
                 style = MaterialTheme.typography.bodySmall,
