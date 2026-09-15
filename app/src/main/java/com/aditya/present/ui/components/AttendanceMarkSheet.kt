@@ -1,8 +1,12 @@
 package com.aditya.present.ui.components
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,17 +34,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
@@ -68,7 +77,7 @@ fun AttendanceMarkSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
+                .padding(bottom = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Subject header with color dot
@@ -115,8 +124,7 @@ fun AttendanceMarkSheet(
                 MarkButton(
                     icon = Icons.Filled.Check,
                     label = stringResource(R.string.status_present),
-                    containerColor = Color(0xFF4CAF50),
-                    contentColor = Color.White,
+                    gradient = Brush.linearGradient(listOf(Color(0xFF43A047), Color(0xFF2E7D32))),
                     modifier = Modifier.weight(1f).semantics {
                         contentDescription = context.getString(R.string.mark_as_present)
                     },
@@ -128,8 +136,7 @@ fun AttendanceMarkSheet(
                 MarkButton(
                     icon = Icons.Filled.Close,
                     label = stringResource(R.string.status_absent),
-                    containerColor = Color(0xFFEF4444),
-                    contentColor = Color.White,
+                    gradient = Brush.linearGradient(listOf(Color(0xFFEF5350), Color(0xFFC62828))),
                     modifier = Modifier.weight(1f).semantics {
                         contentDescription = context.getString(R.string.mark_as_absent)
                     },
@@ -147,8 +154,7 @@ fun AttendanceMarkSheet(
                 MarkButton(
                     icon = Icons.Filled.EventBusy,
                     label = stringResource(R.string.status_cancelled),
-                    containerColor = Color(0xFFFF9800),
-                    contentColor = Color.White,
+                    gradient = Brush.linearGradient(listOf(Color(0xFFFFB74D), Color(0xFFEF6C00))),
                     modifier = Modifier.weight(1f).semantics {
                         contentDescription = context.getString(R.string.mark_as_cancelled)
                     },
@@ -160,8 +166,9 @@ fun AttendanceMarkSheet(
                 MarkButton(
                     icon = Icons.Filled.Work,
                     label = stringResource(R.string.status_on_duty),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    gradient = Brush.linearGradient(
+                        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f))
+                    ),
                     modifier = Modifier.weight(1f).semantics {
                         contentDescription = context.getString(R.string.mark_as_on_duty)
                     },
@@ -179,33 +186,58 @@ fun AttendanceMarkSheet(
 private fun MarkButton(
     icon: ImageVector,
     label: String,
-    containerColor: Color,
-    contentColor: Color,
+    gradient: Brush,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Row(
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "ButtonScale",
+    )
+
+    Column(
         modifier = modifier
-            .heightIn(min = 56.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(containerColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+            .heightIn(min = 96.dp)
+            .scale(scale)
+            .clip(RoundedCornerShape(20.dp))
+            .background(gradient)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = 12.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = contentColor,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            color = contentColor,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
