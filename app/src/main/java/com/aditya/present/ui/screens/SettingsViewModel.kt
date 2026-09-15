@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aditya.present.R
 import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.ThemePrefs
 import com.aditya.present.data.ThemeRepository
@@ -111,7 +112,10 @@ class SettingsViewModel @Inject constructor(
     fun exportCsv(context: Context, uri: Uri) {
         viewModelScope.launch {
             val success = ExportUtil.exportToCsv(context, presentRepository, uri)
-            _exportMessage.value = if (success) "Export successful" else "Export failed"
+            _exportMessage.value = if (success)
+                appContext.getString(R.string.export_success, uri.toString())
+            else
+                appContext.getString(R.string.export_failed)
         }
     }
 
@@ -119,8 +123,8 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = ExportUtil.importFromCsv(context, presentRepository, uri)
             _exportMessage.value = result.fold(
-                onSuccess = { "Import successful" },
-                onFailure = { "Import failed: ${it.message}" },
+                onSuccess = { appContext.getString(R.string.import_success) },
+                onFailure = { appContext.getString(R.string.import_failed, it.message ?: "") },
             )
         }
     }

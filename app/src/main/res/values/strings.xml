@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Present</string>
-    <string name="add_subject">Add Subject</string>
-    <string name="empty_state_title">No subjects yet</string>
-    <string name="empty_state_subtitle">Tap "Add Subject" to start tracking your attendance</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_theme">Theme</string>
-    <string name="settings_accent_color">Accent Color</string>
-    <string name="settings_dynamic_color">Dynamic Color</string>
-    <string name="settings_dynamic_color_desc">Android 12+ — blends palette with your wallpaper</string>
-    <string name="settings_animations">Animations</string>
-    <string name="settings_animations_desc">Enables transitions, spring motion, and staggered lists</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_desc">Present — Every class counts.</string>
     <string name="settings_customization">Customization</string>
     <string name="settings_card_style">Card Style</string>
     <string name="settings_card_style_desc">Choose how subject cards look</string>
@@ -131,7 +121,6 @@
     <string name="sessions_type_yearly">Yearly</string>
     <string name="sessions_subjects_count">%1$d subjects</string>
     <string name="sessions_no_sessions">No sessions yet</string>
-    <string name="sessions_switch_to">Switch to %1$s</string>
     <string name="sessions_active">Active</string>
     <string name="sessions_create">Create</string>
 
