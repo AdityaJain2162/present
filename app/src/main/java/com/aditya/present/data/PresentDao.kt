@@ -101,4 +101,16 @@ interface PresentDao {
 
     @Query("SELECT * FROM attendance")
     suspend fun getAllAttendance(): List<AttendanceEntity>
+
+    @Query("DELETE FROM attendance")
+    suspend fun clearAttendance()
+
+    @Query("DELETE FROM class_slots")
+    suspend fun clearSlots()
+
+    @Query("DELETE FROM subjects")
+    suspend fun clearSubjects()
+
+    @Query("DELETE FROM academic_sessions")
+    suspend fun clearSessions()
 }

@@ -401,6 +401,33 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Import Data ──
+            SettingsCard(title = stringResource(R.string.import_title)) {
+                Text(
+                    stringResource(R.string.import_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                val importLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if (uri != null) {
+                        haptics.confirm()
+                        viewModel.importCsv(context, uri)
+                    }
+                }
+                androidx.compose.material3.OutlinedButton(
+                    onClick = {
+                        haptics.tap()
+                        importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values", "*/*"))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.import_button))
+                }
+            }
+
             // ── About (navigates to full About screen) ──
             SettingsCard(title = stringResource(R.string.settings_about)) {
                 Row(

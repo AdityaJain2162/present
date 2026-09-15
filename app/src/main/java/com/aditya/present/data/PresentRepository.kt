@@ -93,6 +93,18 @@ class PresentRepository @Inject constructor(
     suspend fun getAllAttendance(): List<AttendanceEntity> = dao.getAllAttendance()
     suspend fun getAllSessionsList(): List<AcademicSessionEntity> = dao.getAllSessions().first()
 
+    suspend fun clearAllData() {
+        dao.clearAttendance()
+        dao.clearSlots()
+        dao.clearSubjects()
+        dao.clearSessions()
+    }
+
+    suspend fun importSession(session: AcademicSessionEntity): Long = dao.insertSession(session)
+    suspend fun importSubject(subject: SubjectEntity): Long = dao.insertSubject(subject)
+    suspend fun importSlot(slot: ClassSlotEntity): Long = dao.insertSlot(slot)
+    suspend fun importAttendance(entry: AttendanceEntity): Long = dao.insertAttendance(entry)
+
     // Attendance
     fun getAttendanceForSubject(subjectId: Long): Flow<List<AttendanceEntity>> =
         dao.getAttendanceForSubject(subjectId)

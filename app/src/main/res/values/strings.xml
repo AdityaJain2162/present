@@ -142,6 +142,22 @@
     <string name="export_success">Exported to %1$s</string>
     <string name="export_failed">Export failed</string>
 
+    <!-- Import -->
+    <string name="import_title">Import Data</string>
+    <string name="import_description">Import sessions, subjects, and attendance from a CSV file</string>
+    <string name="import_button">Import from CSV</string>
+    <string name="import_success">Imported successfully</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_confirm_title">Confirm Import</string>
+    <string name="import_confirm_message">This will replace all existing data. Continue?</string>
+    <string name="import_confirm_yes">Import</string>
+
+    <!-- Add Slot Dialog (enhanced) -->
+    <string name="timetable_custom_duration">Custom duration (minutes)</string>
+    <string name="timetable_duration_minutes">%1$d min</string>
+    <string name="timetable_select_time">Select Time</string>
+    <string name="timetable_pick_time">Pick Time</string>
+
     <!-- Home -->
     <string name="home_no_session">No session</string>
     <string name="home_switch_session">Switch session</string>

@@ -92,6 +92,16 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun importCsv(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val result = ExportUtil.importFromCsv(context, presentRepository, uri)
+            _exportMessage.value = result.fold(
+                onSuccess = { "Import successful" },
+                onFailure = { "Import failed: ${it.message}" },
+            )
+        }
+    }
+
     fun clearExportMessage() {
         _exportMessage.value = null
     }
