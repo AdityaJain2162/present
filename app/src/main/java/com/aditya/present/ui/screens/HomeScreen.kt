@@ -23,6 +23,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -285,6 +290,15 @@ fun HomeScreen(
                         )
                     }
 
+                    // Streak stats row
+                    item {
+                        StreakStatsRow(
+                            currentStreak = uiState.currentStreak,
+                            bestStreak = uiState.bestStreak,
+                            perfectDays = uiState.perfectDays,
+                        )
+                    }
+
                     // Subject list with staggered animation
                     itemsIndexed(uiState.subjects, key = { _, s -> s.subject.id }) { index, subjectWithAtt ->
                         val delayMs = if (animations) index * 40 else 0
@@ -445,6 +459,81 @@ private fun OverallAttendanceCard(
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.8f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StreakStatsRow(
+    currentStreak: Int,
+    bestStreak: Int,
+    perfectDays: Int,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        StreakChip(
+            icon = Icons.Filled.LocalFireDepartment,
+            label = stringResource(R.string.home_streak_current),
+            value = "$currentStreak",
+            modifier = Modifier.weight(1f),
+        )
+        StreakChip(
+            icon = Icons.Filled.EmojiEvents,
+            label = stringResource(R.string.home_streak_best),
+            value = "$bestStreak",
+            modifier = Modifier.weight(1f),
+        )
+        StreakChip(
+            icon = Icons.Filled.Star,
+            label = stringResource(R.string.home_streak_perfect),
+            value = "$perfectDays",
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun StreakChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        shape = MaterialTheme.shapes.large,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp),
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

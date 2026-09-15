@@ -8,6 +8,7 @@ import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.data.SubjectWithStats
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.domain.StreakCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,6 +45,9 @@ data class HomeUiState(
     val monthlyTotal: Int = 0,
     val weeklyAttended: Int = 0,
     val weeklyTotal: Int = 0,
+    val currentStreak: Int = 0,
+    val bestStreak: Int = 0,
+    val perfectDays: Int = 0,
 )
 
 @HiltViewModel
@@ -140,6 +144,8 @@ class HomeViewModel @Inject constructor(
                                         it.status == AttendanceStatus.ABSENT.name
                                 }
 
+                                val streakStats = StreakCalculator.calculate(allEntries)
+
                                 HomeUiState(
                                     activeSession = session,
                                     allSessions = sessions,
@@ -153,6 +159,9 @@ class HomeViewModel @Inject constructor(
                                     monthlyTotal = monthlyTotal,
                                     weeklyAttended = weeklyAttended,
                                     weeklyTotal = weeklyTotal,
+                                    currentStreak = streakStats.currentStreak,
+                                    bestStreak = streakStats.bestStreak,
+                                    perfectDays = streakStats.perfectDays,
                                 )
                             }
                         }

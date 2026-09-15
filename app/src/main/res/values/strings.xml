@@ -217,4 +217,9 @@
     <string name="notif_class_starting">Class at %1$s — mark attendance</string>
     <string name="notif_auto_mark_title">Auto-marked classes</string>
     <string name="notif_auto_mark_body">%1$d unmarked class(es) marked as absent</string>
+
+    <!-- Streaks -->
+    <string name="home_streak_current">Current</string>
+    <string name="home_streak_best">Best</string>
+    <string name="home_streak_perfect">Perfect</string>
 </resources>
