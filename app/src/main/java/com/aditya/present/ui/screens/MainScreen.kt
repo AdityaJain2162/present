@@ -144,13 +144,13 @@ private fun FloatingNavBar(
                 .height(68.dp),
         ) {
             val tabWidth = maxWidth / tabs.size
-            val pillWidth = (tabWidth - 4.dp).coerceAtLeast(64.dp)
+            val pillWidth = tabWidth
             val pillHeight = 52.dp
 
             val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
             val indicatorOffset by animateDpAsState(
-                targetValue = (tabWidth * selectedIndex) + ((tabWidth - pillWidth) / 2),
+                targetValue = tabWidth * selectedIndex,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessMediumLow,
