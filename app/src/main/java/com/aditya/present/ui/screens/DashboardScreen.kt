@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -81,30 +82,41 @@ fun DashboardScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clip(MaterialTheme.shapes.large)
-                                .clickable { menuExpanded = true }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        ) {
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.app_name),
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleLarge,
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = uiState.activeSession?.name ?: stringResource(R.string.home_no_session),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    if (uiState.allSessions.size > 1) {
-                                        Icon(
-                                            imageVector = Icons.Filled.ArrowDropDown,
-                                            contentDescription = stringResource(R.string.home_switch_session),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(18.dp),
-                                        )
-                                    }
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                .clickable {
+                                    haptics.tap()
+                                    if (uiState.allSessions.size > 1) menuExpanded = true
                                 }
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.app_name),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(20.dp)
+                                    .background(MaterialTheme.colorScheme.outlineVariant),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = uiState.activeSession?.name ?: stringResource(R.string.home_no_session),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (uiState.allSessions.size > 1) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDropDown,
+                                    contentDescription = stringResource(R.string.home_switch_session),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp),
+                                )
                             }
                         }
                         DropdownMenu(
@@ -157,30 +169,20 @@ fun DashboardScreen(
                         }
                     }
                 },
-                actions = {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable {
-                                haptics.tap()
-                                uiState.activeSession?.let { onAddSubject(it.id) }
-                            }
-                            .semantics { contentDescription = "Add subject" },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(24.dp),
-                        )
-                    }
-                },
             )
-        }
+        },
+        floatingActionButton = {
+            androidx.compose.material3.ExtendedFloatingActionButton(
+                onClick = {
+                    haptics.tap()
+                    uiState.activeSession?.let { onAddSubject(it.id) }
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = { Text(stringResource(R.string.home_add_subject)) },
+            )
+        },
     ) { padding ->
         when {
             uiState.isLoading -> {

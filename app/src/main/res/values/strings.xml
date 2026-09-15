@@ -166,6 +166,7 @@
     <string name="home_welcome_subtitle">Add your first subject to start tracking attendance and never worry about falling below your target again.</string>
     <string name="home_add_first_subject">Add Your First Subject</string>
     <string name="home_add_subject_cd">Add subject</string>
+    <string name="home_add_subject">Add Subject</string>
     <string name="home_period_overall">Overall</string>
     <string name="home_period_monthly">Monthly</string>
     <string name="home_period_weekly">Weekly</string>
