@@ -8,13 +8,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import com.aditya.present.data.ThemeRepository
+import com.aditya.present.domain.ThemeMode
 import com.aditya.present.ui.navigation.PresentNavHost
 import com.aditya.present.ui.theme.PresentTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var themeRepository: ThemeRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -29,7 +38,10 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            PresentTheme {
+            val themeMode by themeRepository.themeMode
+                .collectAsState(initial = ThemeMode.SYSTEM)
+
+            PresentTheme(themeMode = themeMode) {
                 PresentNavHost()
             }
         }
