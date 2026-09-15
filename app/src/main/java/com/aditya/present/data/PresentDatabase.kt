@@ -18,7 +18,7 @@ import javax.inject.Singleton
         ClassSlotEntity::class,
         AttendanceEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class PresentDatabase : RoomDatabase() {

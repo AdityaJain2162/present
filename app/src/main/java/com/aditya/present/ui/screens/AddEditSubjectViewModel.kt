@@ -19,6 +19,7 @@ data class AddEditSubjectUiState(
     val color: Int = 0xFF006A6A.toInt(),
     val targetPercent: Float = 75f,
     val totalUnits: Int = 1,
+    val teacherName: String = "",
     val isEdit: Boolean = false,
     val isSaved: Boolean = false,
 )
@@ -39,6 +40,7 @@ class AddEditSubjectViewModel @Inject constructor(
                 color = subject.color,
                 targetPercent = subject.targetAttendancePercent,
                 totalUnits = subject.totalUnits,
+                teacherName = subject.teacherName,
                 isEdit = true,
             )
         }
@@ -48,6 +50,10 @@ class AddEditSubjectViewModel @Inject constructor(
         _uiState.update {
             it.copy(name = name, acronym = AcronymGenerator.generate(name))
         }
+    }
+
+    fun updateTeacherName(name: String) {
+        _uiState.update { it.copy(teacherName = name) }
     }
 
     fun updateColor(color: Int) {
@@ -77,6 +83,7 @@ class AddEditSubjectViewModel @Inject constructor(
                         color = state.color,
                         targetAttendancePercent = state.targetPercent,
                         totalUnits = state.totalUnits,
+                        teacherName = state.teacherName,
                     )
                 )
             } else {
@@ -87,6 +94,7 @@ class AddEditSubjectViewModel @Inject constructor(
                     color = state.color,
                     target = state.targetPercent,
                     totalUnits = state.totalUnits,
+                    teacherName = state.teacherName,
                 )
             }
             _uiState.update { it.copy(isSaved = true) }

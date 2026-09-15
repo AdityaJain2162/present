@@ -209,7 +209,7 @@ private fun AboutInfoCard(
         ),
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Box(
@@ -227,7 +227,7 @@ private fun AboutInfoCard(
                 )
             }
             Spacer(modifier = Modifier.size(16.dp))
-            Column {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
@@ -262,7 +262,7 @@ private fun AboutLinkCard(
         ),
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(

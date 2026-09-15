@@ -83,6 +83,14 @@ fun AddEditSubjectScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            OutlinedTextField(
+                value = uiState.teacherName,
+                onValueChange = viewModel::updateTeacherName,
+                label = { Text("Teacher name (optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             if (uiState.acronym.isNotBlank()) {
                 Text(
                     text = "Acronym: ${uiState.acronym}",

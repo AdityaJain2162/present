@@ -36,6 +36,7 @@ data class SubjectEntity(
     val color: Int,
     val targetAttendancePercent: Float = 75f,
     val totalUnits: Int = 1,
+    val teacherName: String = "",
 )
 
 @Entity(

@@ -19,6 +19,7 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val activeSession: AcademicSessionEntity? = null,
+    val allSessions: List<AcademicSessionEntity> = emptyList(),
     val subjects: List<SubjectEntity> = emptyList(),
     val isLoading: Boolean = true,
 )
@@ -35,13 +36,16 @@ class HomeViewModel @Inject constructor(
                 flowOf(HomeUiState(isLoading = false))
             } else {
                 repository.getSubjectsForSession(session.id).flatMapLatest { subjects ->
-                    flowOf(
-                        HomeUiState(
-                            activeSession = session,
-                            subjects = subjects,
-                            isLoading = false,
+                    repository.getAllSessions().flatMapLatest { sessions ->
+                        flowOf(
+                            HomeUiState(
+                                activeSession = session,
+                                allSessions = sessions,
+                                subjects = subjects,
+                                isLoading = false,
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -54,6 +58,12 @@ class HomeViewModel @Inject constructor(
     fun deleteSubject(subject: SubjectEntity) {
         viewModelScope.launch {
             repository.deleteSubject(subject)
+        }
+    }
+
+    fun switchSession(sessionId: Long) {
+        viewModelScope.launch {
+            repository.setActiveSession(sessionId)
         }
     }
 }

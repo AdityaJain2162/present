@@ -20,14 +20,20 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,6 +59,7 @@ import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalAnimationsEnabled
+import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.primaryGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,14 +79,52 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold)
-                        uiState.activeSession?.let {
-                            Text(
-                                text = it.name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                    var menuExpanded by remember { mutableStateOf(false) }
+                    val haptics = LocalHaptics.current
+
+                    Box {
+                        TextButton(onClick = { menuExpanded = true }) {
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.app_name),
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge,
+                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = uiState.activeSession?.name ?: "No session",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (uiState.allSessions.size > 1) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            contentDescription = "Switch session",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                        ) {
+                            uiState.allSessions.forEach { session ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = session.name + if (session.isActive) " (active)" else "",
+                                            fontWeight = if (session.isActive) FontWeight.Bold else FontWeight.Normal,
+                                        )
+                                    },
+                                    onClick = {
+                                        haptics.confirm()
+                                        viewModel.switchSession(session.id)
+                                        menuExpanded = false
+                                    },
+                                )
+                            }
                         }
                     }
                 }

@@ -59,6 +59,7 @@ class PresentRepository @Inject constructor(
         color: Int,
         target: Float,
         totalUnits: Int,
+        teacherName: String = "",
     ): Long = dao.insertSubject(
         SubjectEntity(
             sessionId = sessionId,
@@ -67,6 +68,7 @@ class PresentRepository @Inject constructor(
             color = color,
             targetAttendancePercent = target,
             totalUnits = totalUnits,
+            teacherName = teacherName,
         )
     )
 

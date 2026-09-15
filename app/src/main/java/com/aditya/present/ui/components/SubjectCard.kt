@@ -78,7 +78,13 @@ fun SubjectCard(
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
-                            text = "${subject.acronym} • ${attendedUnits}/${totalUnits} units",
+                            text = buildString {
+                                append(subject.acronym)
+                                append(" • ${attendedUnits}/${totalUnits} units")
+                                if (subject.teacherName.isNotBlank()) {
+                                    append(" • ${subject.teacherName}")
+                                }
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
