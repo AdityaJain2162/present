@@ -2,6 +2,8 @@ package com.aditya.present.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -366,6 +368,36 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // ── Export Data ──
+            SettingsCard(title = stringResource(R.string.export_title)) {
+                Text(
+                    stringResource(R.string.export_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                val context = LocalContext.current
+                val haptics = LocalHaptics.current
+                val exportLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.CreateDocument("text/csv")
+                ) { uri ->
+                    if (uri != null) {
+                        haptics.confirm()
+                        // Export runs in a coroutine from the ViewModel
+                        viewModel.exportCsv(context, uri)
+                    }
+                }
+                androidx.compose.material3.Button(
+                    onClick = {
+                        haptics.tap()
+                        exportLauncher.launch("present_export_${System.currentTimeMillis() / 1000}.csv")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.export_button))
                 }
             }
 

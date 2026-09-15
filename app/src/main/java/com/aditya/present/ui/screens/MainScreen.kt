@@ -48,6 +48,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onAddSubject: (Long) -> Unit,
     onAbout: () -> Unit = {},
+    onSessions: () -> Unit = {},
 ) {
     val tabs = Tab.entries
     val haptics = LocalHaptics.current
@@ -86,6 +87,7 @@ fun MainScreen(
                 Tab.HOME -> HomeScreen(
                     onAddSubject = onAddSubject,
                     onSubjectClick = { },
+                    onManageSessions = onSessions,
                 )
                 Tab.CALENDAR -> CalendarScreen()
                 Tab.TIMETABLE -> TimetableScreen()

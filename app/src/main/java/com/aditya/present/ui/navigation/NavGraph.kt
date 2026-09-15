@@ -20,11 +20,13 @@ import com.aditya.present.ui.screens.AddEditSubjectScreen
 import com.aditya.present.ui.screens.MainScreen
 import com.aditya.present.ui.screens.OnboardingScreen
 import com.aditya.present.ui.screens.OnboardingViewModel
+import com.aditya.present.ui.screens.SessionsScreen
 
 object Routes {
     const val ONBOARDING = "onboarding"
     const val MAIN = "main"
     const val ABOUT = "about"
+    const val SESSIONS = "sessions"
     const val ADD_SUBJECT = "add_subject/{sessionId}"
     const val EDIT_SUBJECT = "edit_subject/{sessionId}/{subjectId}"
 
@@ -76,6 +78,15 @@ fun PresentNavHost(
                 onAbout = {
                     navController.navigate(Routes.ABOUT)
                 },
+                onSessions = {
+                    navController.navigate(Routes.SESSIONS)
+                },
+            )
+        }
+
+        composable(Routes.SESSIONS) {
+            SessionsScreen(
+                onBack = { navController.popBackStack() },
             )
         }
 

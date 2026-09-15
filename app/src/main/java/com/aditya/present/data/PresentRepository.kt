@@ -3,6 +3,7 @@ package com.aditya.present.data
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.domain.SessionType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -81,6 +82,17 @@ class PresentRepository @Inject constructor(
     suspend fun insertSlot(subjectId: Long, dayOfWeek: Int, startTimeMinutes: Int, units: Int): Long =
         dao.insertSlot(ClassSlotEntity(subjectId = subjectId, dayOfWeek = dayOfWeek, startTimeMinutes = startTimeMinutes, units = units))
 
+    suspend fun deleteSlot(slotId: Long) = dao.deleteSlot(slotId)
+
+    suspend fun getSlotsForSubjectOnDay(subjectId: Long, dayOfWeek: Int): List<ClassSlotEntity> =
+        dao.getSlotsForSubjectOnDay(subjectId, dayOfWeek)
+
+    // Export helpers
+    suspend fun getAllSubjects(): List<SubjectEntity> = dao.getAllSubjects()
+    suspend fun getAllSlots(): List<ClassSlotEntity> = dao.getAllSlots()
+    suspend fun getAllAttendance(): List<AttendanceEntity> = dao.getAllAttendance()
+    suspend fun getAllSessionsList(): List<AcademicSessionEntity> = dao.getAllSessions().first()
+
     // Attendance
     fun getAttendanceForSubject(subjectId: Long): Flow<List<AttendanceEntity>> =
         dao.getAttendanceForSubject(subjectId)
@@ -111,9 +123,10 @@ class PresentRepository @Inject constructor(
     suspend fun deleteAttendanceById(id: Long) = dao.deleteAttendanceById(id)
 
     /**
-     * Upsert attendance: if an entry exists for this subject on this date,
-     * update it; otherwise insert a new one. Prevents duplicate entries.
-     * Returns the ID of the inserted/updated entry.
+     * Upsert attendance: if an entry exists for this subject+slot on this date,
+     * update it; otherwise insert a new one. Slot-aware: if slotId is provided,
+     * checks by subjectId+slotId+date; if null, checks by subjectId+date (slotless).
+     * This allows multiple entries per subject per day when linked to different slots.
      */
     suspend fun upsertAttendance(
         subjectId: Long,
@@ -125,7 +138,11 @@ class PresentRepository @Inject constructor(
     ): Long {
         val startOfDay = startOfDay(date)
         val endOfDay = endOfDay(date)
-        val existing = dao.getAttendanceForSubjectOnDate(subjectId, startOfDay, endOfDay)
+        val existing = if (slotId != null) {
+            dao.getAttendanceForSlotOnDate(subjectId, slotId, startOfDay, endOfDay)
+        } else {
+            dao.getSlotlessAttendanceForSubjectOnDate(subjectId, startOfDay, endOfDay)
+        }
         return if (existing != null) {
             val updated = existing.copy(status = status.name, units = units, slotId = slotId, isAuto = isAuto)
             dao.updateAttendance(updated)

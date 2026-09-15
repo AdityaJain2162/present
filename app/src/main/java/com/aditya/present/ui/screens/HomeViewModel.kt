@@ -121,12 +121,31 @@ class HomeViewModel @Inject constructor(
     fun markAttendance(subjectId: Long, status: AttendanceStatus, subjectName: String) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            val id = repository.upsertAttendance(
-                subjectId = subjectId,
-                date = now,
-                status = status,
-            )
-            _lastMarkedId.value = id
+            // Check if today has timetable slots for this subject
+            val todayDayOfWeek = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK)
+            val todaySlots = repository.getSlotsForSubjectOnDay(subjectId, todayDayOfWeek)
+
+            if (todaySlots.isNotEmpty()) {
+                // Mark each slot for today
+                var lastId: Long? = null
+                for (slot in todaySlots) {
+                    lastId = repository.upsertAttendance(
+                        subjectId = subjectId,
+                        date = now,
+                        status = status,
+                        slotId = slot.id,
+                    )
+                }
+                _lastMarkedId.value = lastId
+            } else {
+                // No slots today — mark a slotless entry
+                val id = repository.upsertAttendance(
+                    subjectId = subjectId,
+                    date = now,
+                    status = status,
+                )
+                _lastMarkedId.value = id
+            }
             _lastMarked.value = subjectName to status
         }
     }

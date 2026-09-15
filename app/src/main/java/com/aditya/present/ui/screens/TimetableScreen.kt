@@ -3,6 +3,7 @@ package com.aditya.present.ui.screens
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -116,7 +117,19 @@ fun TimetableScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.timetable_title), fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.timetable_title), fontWeight = FontWeight.Bold) },
+                actions = {
+                    if (selectedDay != today) {
+                        TextButton(onClick = {
+                            haptics.tap()
+                            selectedDay = today
+                        }) {
+                            Text(stringResource(R.string.timetable_today))
+                        }
+                    }
+                },
+            )
         },
         floatingActionButton = {
             if (uiState.subjects.isNotEmpty()) {
@@ -221,13 +234,18 @@ fun TimetableScreen(
                             timetableSlot.subject?.let { subject ->
                                 SwipeableTimetableCard(
                                     subject = subject,
+                                    slotId = timetableSlot.slot.id,
                                     startTimeMinutes = timetableSlot.slot.startTimeMinutes,
                                     units = timetableSlot.slot.units,
                                     todayStatus = timetableSlot.todayStatus,
                                     onMark = { status ->
                                         haptics.heavy()
-                                        viewModel.markAttendance(subject.id, status)
+                                        viewModel.markAttendance(subject.id, timetableSlot.slot.id, status)
                                         lastMarked = subject.name to status
+                                    },
+                                    onDeleteSlot = {
+                                        haptics.heavy()
+                                        viewModel.deleteSlot(timetableSlot.slot.id)
                                     },
                                 )
                             }
@@ -251,17 +269,21 @@ fun TimetableScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun SwipeableTimetableCard(
     subject: SubjectEntity,
+    slotId: Long,
     startTimeMinutes: Int,
     units: Int,
     todayStatus: AttendanceStatus?,
     onMark: (AttendanceStatus) -> Unit,
+    onDeleteSlot: () -> Unit,
 ) {
     val context = LocalContext.current
     var offsetX by remember { mutableStateOf(0f) }
     val animatedOffset by animateFloatAsState(targetValue = offsetX, label = "offset")
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     val hour = startTimeMinutes / 60
     val minute = startTimeMinutes % 60
@@ -274,6 +296,23 @@ private fun SwipeableTimetableCard(
         offsetX > 150f -> Color(0xFF4CAF50).copy(alpha = 0.2f)
         offsetX < -150f -> Color(0xFFEF4444).copy(alpha = 0.2f)
         else -> MaterialTheme.colorScheme.surfaceContainer
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.timetable_delete_slot)) },
+            text = { Text(stringResource(R.string.timetable_delete_slot_confirm, subject.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDeleteSlot()
+                    showDeleteConfirm = false
+                }) { Text(stringResource(R.string.delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 
     Box(
@@ -312,6 +351,10 @@ private fun SwipeableTimetableCard(
                 .fillMaxWidth()
                 .offset(x = animatedOffset.dp)
                 .clip(CardShape)
+                .combinedClickable(
+                    onLongClick = { showDeleteConfirm = true },
+                    onClick = {},
+                )
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
                         onDragEnd = {

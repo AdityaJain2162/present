@@ -50,6 +50,9 @@ interface PresentDao {
     @Query("SELECT * FROM class_slots WHERE subjectId = :subjectId ORDER BY dayOfWeek, startTimeMinutes")
     fun getSlotsForSubject(subjectId: Long): Flow<List<ClassSlotEntity>>
 
+    @Query("SELECT * FROM class_slots WHERE subjectId = :subjectId AND dayOfWeek = :dayOfWeek ORDER BY startTimeMinutes")
+    suspend fun getSlotsForSubjectOnDay(subjectId: Long, dayOfWeek: Int): List<ClassSlotEntity>
+
     @Query("SELECT * FROM class_slots WHERE dayOfWeek = :dayOfWeek ORDER BY startTimeMinutes")
     fun getSlotsForDay(dayOfWeek: Int): Flow<List<ClassSlotEntity>>
 
@@ -80,4 +83,22 @@ interface PresentDao {
 
     @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end LIMIT 1")
     suspend fun getAttendanceForSubjectOnDate(subjectId: Long, start: Long, end: Long): AttendanceEntity?
+
+    @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND slotId = :slotId AND date BETWEEN :start AND :end LIMIT 1")
+    suspend fun getAttendanceForSlotOnDate(subjectId: Long, slotId: Long, start: Long, end: Long): AttendanceEntity?
+
+    @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND slotId IS NULL AND date BETWEEN :start AND :end LIMIT 1")
+    suspend fun getSlotlessAttendanceForSubjectOnDate(subjectId: Long, start: Long, end: Long): AttendanceEntity?
+
+    @Query("DELETE FROM class_slots WHERE id = :slotId")
+    suspend fun deleteSlot(slotId: Long)
+
+    @Query("SELECT * FROM subjects")
+    suspend fun getAllSubjects(): List<SubjectEntity>
+
+    @Query("SELECT * FROM class_slots")
+    suspend fun getAllSlots(): List<ClassSlotEntity>
+
+    @Query("SELECT * FROM attendance")
+    suspend fun getAllAttendance(): List<AttendanceEntity>
 }

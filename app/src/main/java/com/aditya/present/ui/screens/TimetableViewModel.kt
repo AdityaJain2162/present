@@ -118,9 +118,15 @@ class TimetableViewModel @Inject constructor(
         }
     }
 
-    fun markAttendance(subjectId: Long, status: AttendanceStatus) {
+    fun markAttendance(subjectId: Long, slotId: Long, status: AttendanceStatus) {
         viewModelScope.launch {
-            repository.upsertAttendance(subjectId, System.currentTimeMillis(), status)
+            repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, slotId = slotId)
+        }
+    }
+
+    fun deleteSlot(slotId: Long) {
+        viewModelScope.launch {
+            repository.deleteSlot(slotId)
         }
     }
 

@@ -1,13 +1,19 @@
 package com.aditya.present.ui.screens
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.ThemePrefs
 import com.aditya.present.data.ThemeRepository
 import com.aditya.present.domain.ThemeMode
+import com.aditya.present.util.ExportUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,7 +21,11 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val themeRepository: ThemeRepository,
+    private val presentRepository: PresentRepository,
 ) : ViewModel() {
+
+    private val _exportMessage = MutableStateFlow<String?>(null)
+    val exportMessage: StateFlow<String?> = _exportMessage.asStateFlow()
 
     val themePrefs: StateFlow<ThemePrefs> = themeRepository.themePrefs
         .stateIn(
@@ -73,5 +83,16 @@ class SettingsViewModel @Inject constructor(
 
     fun setHapticIntensity(intensity: String) {
         viewModelScope.launch { themeRepository.setHapticIntensity(intensity) }
+    }
+
+    fun exportCsv(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val success = ExportUtil.exportToCsv(context, presentRepository, uri)
+            _exportMessage.value = if (success) "Export successful" else "Export failed"
+        }
+    }
+
+    fun clearExportMessage() {
+        _exportMessage.value = null
     }
 }

@@ -117,6 +117,30 @@
     <string name="timetable_select_day">Select %1$s</string>
     <string name="timetable_marked_status">%1$s at %2$s. Marked %3$s.</string>
     <string name="timetable_swipe_hint">%1$s at %2$s. Swipe right for present, left for absent.</string>
+    <string name="timetable_today">Today</string>
+    <string name="timetable_delete_slot">Delete Slot</string>
+    <string name="timetable_delete_slot_confirm">Remove %1$s from this day\'s timetable?</string>
+    <string name="delete">Delete</string>
+
+    <!-- Sessions -->
+    <string name="sessions_title">Sessions</string>
+    <string name="sessions_manage">Manage Sessions</string>
+    <string name="sessions_add_new">Add New Session</string>
+    <string name="sessions_name">Session name</string>
+    <string name="sessions_type_semester">Semester</string>
+    <string name="sessions_type_yearly">Yearly</string>
+    <string name="sessions_subjects_count">%1$d subjects</string>
+    <string name="sessions_no_sessions">No sessions yet</string>
+    <string name="sessions_switch_to">Switch to %1$s</string>
+    <string name="sessions_active">Active</string>
+    <string name="sessions_create">Create</string>
+
+    <!-- Export -->
+    <string name="export_title">Export Data</string>
+    <string name="export_description">Export sessions, subjects, and attendance as CSV</string>
+    <string name="export_button">Export as CSV</string>
+    <string name="export_success">Exported to %1$s</string>
+    <string name="export_failed">Export failed</string>
 
     <!-- Home -->
     <string name="home_no_session">No session</string>
