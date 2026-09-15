@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 data class TimetableSlot(
@@ -118,9 +120,13 @@ class TimetableViewModel @Inject constructor(
         }
     }
 
+    private val markMutex = Mutex()
+
     fun markAttendance(subjectId: Long, slotId: Long, status: AttendanceStatus) {
         viewModelScope.launch {
-            repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, slotId = slotId)
+            markMutex.withLock {
+                repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, slotId = slotId)
+            }
         }
     }
 

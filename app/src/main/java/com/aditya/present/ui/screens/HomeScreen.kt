@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -251,6 +252,12 @@ fun HomeScreen(
                             sessionName = uiState.activeSession?.name ?: "",
                             sessionStart = uiState.activeSession?.startDate ?: 0L,
                             sessionEnd = uiState.activeSession?.endDate ?: 0L,
+                            overallAttended = uiState.overallAttended,
+                            overallTotal = uiState.overallTotal,
+                            monthlyAttended = uiState.monthlyAttended,
+                            monthlyTotal = uiState.monthlyTotal,
+                            weeklyAttended = uiState.weeklyAttended,
+                            weeklyTotal = uiState.weeklyTotal,
                         )
                     }
 
@@ -301,16 +308,35 @@ private fun OverallAttendanceCard(
     sessionName: String,
     sessionStart: Long,
     sessionEnd: Long,
+    overallAttended: Int,
+    overallTotal: Int,
+    monthlyAttended: Int,
+    monthlyTotal: Int,
+    weeklyAttended: Int,
+    weeklyTotal: Int,
 ) {
     val accentPreset = LocalAccentPreset.current
     val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
     var selectedPeriod by remember { mutableStateOf(0) }
     val haptics = LocalHaptics.current
 
-    // Compute overall attendance
-    val totalAttended = subjects.sumOf { it.attendedUnits }
-    val totalTotal = subjects.sumOf { it.totalUnits }
-    val overallPct = if (totalTotal > 0) (totalAttended * 100 / totalTotal) else 0
+    // Compute period-specific attendance
+    val (attended, total) = when (selectedPeriod) {
+        1 -> monthlyAttended to monthlyTotal
+        2 -> weeklyAttended to weeklyTotal
+        else -> overallAttended to overallTotal
+    }
+    val pct = if (total > 0) (attended * 100 / total) else 0
+    val hasData = total > 0
+
+    // Dynamic color: green when safe, red when below 75%, neutral when no data
+    val targetPct = 75
+    val percentageColor = when {
+        !hasData -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+        pct >= targetPct -> Color(0xFFB6F500)
+        pct < targetPct -> Color(0xFFFF6B6B)
+        else -> MaterialTheme.colorScheme.onPrimary
+    }
 
     val periodLabel = when (selectedPeriod) {
         1 -> stringResource(R.string.home_period_this_month)
@@ -357,12 +383,21 @@ private fun OverallAttendanceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = stringResource(R.string.home_period_label, periodLabel, overallPct),
+                text = if (hasData) stringResource(R.string.home_period_label, periodLabel, pct) else "$periodLabel: --%",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = percentageColor,
             )
             Spacer(modifier = Modifier.height(4.dp))
+
+            if (hasData) {
+                Text(
+                    text = "$attended / $total classes",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
 
             if (sessionStart > 0 && sessionEnd > 0) {
                 Text(
