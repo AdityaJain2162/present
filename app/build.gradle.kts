@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.play.services.ads)
 
     debugImplementation(libs.androidx.ui.tooling)
+    testImplementation(libs.junit)
 
     // Cucumber + Espresso + Compose UI testing
     androidTestImplementation(libs.cucumber.android)
