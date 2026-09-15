@@ -330,12 +330,13 @@ private fun OverallAttendanceCard(
     val hasData = total > 0
 
     // Dynamic color: green when safe, red when below 75%, neutral when no data
+    // Always use white/light text on the gradient header for consistent contrast
     val targetPct = 75
     val percentageColor = when {
-        !hasData -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+        !hasData -> Color.White.copy(alpha = 0.6f)
         pct >= targetPct -> Color(0xFFB6F500)
         pct < targetPct -> Color(0xFFFF6B6B)
-        else -> MaterialTheme.colorScheme.onPrimary
+        else -> Color.White
     }
 
     val periodLabel = when (selectedPeriod) {
@@ -355,7 +356,7 @@ private fun OverallAttendanceCard(
             Text(
                 text = sessionName.ifBlank { stringResource(R.string.home_period_label_overall) },
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                color = Color.White.copy(alpha = 0.8f),
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -374,8 +375,10 @@ private fun OverallAttendanceCard(
                         },
                         label = { Text(label, fontSize = 12.sp) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedContainerColor = Color.White.copy(alpha = 0.2f),
+                            selectedLabelColor = Color.White,
+                            containerColor = Color.White.copy(alpha = 0.1f),
+                            labelColor = Color.White.copy(alpha = 0.7f),
                         ),
                     )
                 }
@@ -394,7 +397,7 @@ private fun OverallAttendanceCard(
                 Text(
                     text = "$attended / $total classes",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                    color = Color.White.copy(alpha = 0.8f),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -403,7 +406,7 @@ private fun OverallAttendanceCard(
                 Text(
                     text = "${dateFormat.format(Date(sessionStart))} — ${dateFormat.format(Date(sessionEnd))}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                    color = Color.White.copy(alpha = 0.8f),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -416,7 +419,7 @@ private fun OverallAttendanceCard(
                     subjectCount,
                 ),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                color = Color.White.copy(alpha = 0.8f),
             )
         }
     }
