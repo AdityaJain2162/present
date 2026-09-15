@@ -534,8 +534,7 @@ private fun AddSlotDialog(
     val dayNames = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
     val effectiveUnits = if (useCustomDuration && customDuration.isNotBlank()) {
-        val mins = customDuration.toIntOrNull() ?: 60
-        (mins / 60.0).let { if (it % 1 == 0.0) it.toInt() else it.toInt() + 1 }
+        customDuration.toIntOrNull()?.coerceAtLeast(1) ?: 1
     } else {
         units
     }
@@ -697,7 +696,8 @@ private fun AddSlotDialog(
                     OutlinedTextField(
                         value = customDuration,
                         onValueChange = { customDuration = it.filter { c -> c.isDigit() } },
-                        label = { Text(stringResource(R.string.timetable_duration_minutes, 60)) },
+                        label = { Text(stringResource(R.string.timetable_custom_hours)) },
+                        placeholder = { Text(stringResource(R.string.timetable_custom_hours_hint)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),

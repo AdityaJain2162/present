@@ -145,8 +145,10 @@
     <string name="import_confirm_yes">Import</string>
 
     <!-- Add Slot Dialog (enhanced) -->
-    <string name="timetable_custom_duration">Custom duration (minutes)</string>
+    <string name="timetable_custom_duration">Custom duration</string>
     <string name="timetable_duration_minutes">%1$d min</string>
+    <string name="timetable_custom_hours">Duration in hours</string>
+    <string name="timetable_custom_hours_hint">e.g. 4</string>
     <string name="timetable_select_time">Select Time</string>
     <string name="timetable_pick_time">Pick Time</string>
 
