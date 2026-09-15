@@ -6,7 +6,6 @@ import com.aditya.present.data.AcademicSessionEntity
 import com.aditya.present.data.AttendanceEntity
 import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.SubjectEntity
-import com.aditya.present.data.SubjectWithStats
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.domain.StreakCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel

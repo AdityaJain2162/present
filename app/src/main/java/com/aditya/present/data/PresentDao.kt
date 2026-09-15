@@ -50,9 +50,6 @@ interface PresentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSlot(slot: ClassSlotEntity): Long
 
-    @Query("SELECT * FROM class_slots WHERE subjectId = :subjectId ORDER BY dayOfWeek, startTimeMinutes")
-    fun getSlotsForSubject(subjectId: Long): Flow<List<ClassSlotEntity>>
-
     @Query("SELECT * FROM class_slots WHERE subjectId = :subjectId AND dayOfWeek = :dayOfWeek ORDER BY startTimeMinutes")
     suspend fun getSlotsForSubjectOnDay(subjectId: Long, dayOfWeek: Int): List<ClassSlotEntity>
 
@@ -78,20 +75,11 @@ interface PresentDao {
     @Query("SELECT * FROM attendance WHERE date BETWEEN :startOfDay AND :endOfDay ORDER BY date")
     suspend fun getAttendanceForDateList(startOfDay: Long, endOfDay: Long): List<AttendanceEntity>
 
-    @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end ORDER BY date")
-    fun getAttendanceForSubjectInRange(subjectId: Long, start: Long, end: Long): Flow<List<AttendanceEntity>>
-
-    @Query("SELECT * FROM attendance WHERE id = :id")
-    suspend fun getAttendanceById(id: Long): AttendanceEntity?
-
     @Query("DELETE FROM attendance WHERE id = :id")
     suspend fun deleteAttendanceById(id: Long)
 
     @Query("UPDATE attendance SET status = :status WHERE id = :id")
     suspend fun updateAttendanceStatus(id: Long, status: String)
-
-    @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end LIMIT 1")
-    suspend fun getAttendanceForSubjectOnDate(subjectId: Long, start: Long, end: Long): AttendanceEntity?
 
     @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND slotId = :slotId AND date BETWEEN :start AND :end LIMIT 1")
     suspend fun getAttendanceForSlotOnDate(subjectId: Long, slotId: Long, start: Long, end: Long): AttendanceEntity?

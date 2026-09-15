@@ -285,12 +285,12 @@ fun DashboardScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "View detailed statistics",
+                                        text = stringResource(R.string.dashboard_view_stats),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium,
                                     )
                                     Text(
-                                        text = "Trends, breakdowns, charts",
+                                        text = stringResource(R.string.dashboard_view_stats_desc),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

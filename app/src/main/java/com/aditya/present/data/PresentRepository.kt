@@ -4,16 +4,8 @@ import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.domain.SessionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-
-data class SubjectWithStats(
-    val subject: SubjectEntity,
-    val attendedUnits: Int,
-    val totalUnits: Int,
-    val percentage: Float,
-)
 
 @Singleton
 class PresentRepository @Inject constructor(
@@ -204,19 +196,4 @@ class PresentRepository @Inject constructor(
         }
         return cal.timeInMillis
     }
-
-    // Stats
-    fun getSubjectsWithStats(sessionId: Long): Flow<List<SubjectWithStats>> =
-        dao.getSubjectsForSession(sessionId).map { subjects ->
-            subjects.map { subject ->
-                val entries = dao.getAttendanceForSubject(subject.id)
-                // Simplified: will be expanded with Flow composition
-                SubjectWithStats(
-                    subject = subject,
-                    attendedUnits = 0,
-                    totalUnits = 0,
-                    percentage = 0f,
-                )
-            }
-        }
 }

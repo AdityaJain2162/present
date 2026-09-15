@@ -40,11 +40,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.aditya.present.R
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.theme.CardShape
@@ -219,14 +221,14 @@ private fun SubjectCardContent(
                 )
                 if (classesToSkip > 0) {
                     Text(
-                        text = "Can safely skip $classesToSkip more classes",
+                        text = stringResource(R.string.subject_can_skip, classesToSkip),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium,
                     )
                 } else if (classesToAttend > 0) {
                     Text(
-                        text = "Attend next $classesToAttend classes to reach target",
+                        text = stringResource(R.string.subject_need_to_attend, classesToAttend),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Medium,
@@ -248,7 +250,7 @@ private fun SubjectCardContent(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Edit")
+                            Text(stringResource(R.string.subject_edit))
                         }
                     }
                     if (onBunkCalculator != null) {
@@ -259,7 +261,7 @@ private fun SubjectCardContent(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Bunk Calculator")
+                            Text(stringResource(R.string.subject_bunk_calculator))
                         }
                     }
                 }

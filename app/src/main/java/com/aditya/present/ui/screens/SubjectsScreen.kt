@@ -95,7 +95,7 @@ fun SubjectsScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
-            TopAppBar(title = { Text("Subjects") })
+            TopAppBar(title = { Text(stringResource(R.string.subjects_title)) })
         },
     ) { padding ->
         when {
@@ -141,7 +141,7 @@ fun SubjectsScreen(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search subjects...") },
+                            placeholder = { Text(stringResource(R.string.search_subjects)) },
                             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                             singleLine = true,
                             shape = MaterialTheme.shapes.large,

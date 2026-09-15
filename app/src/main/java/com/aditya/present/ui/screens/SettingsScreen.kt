@@ -44,7 +44,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,12 +84,52 @@ fun SettingsScreen(
     val haptics = LocalHaptics.current
     val exportMessage by viewModel.exportMessage.collectAsState()
     val snackbarHost = remember { androidx.compose.material3.SnackbarHostState() }
+    var showImportConfirm by remember { mutableStateOf(false) }
+    var importLauncherPending by remember { mutableStateOf(false) }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            haptics.confirm()
+            viewModel.importCsv(context, uri)
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(importLauncherPending) {
+        if (importLauncherPending) {
+            importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values", "*/*"))
+            importLauncherPending = false
+        }
+    }
 
     androidx.compose.runtime.LaunchedEffect(exportMessage) {
         exportMessage?.let { msg ->
             snackbarHost.showSnackbar(msg)
             viewModel.clearExportMessage()
         }
+    }
+
+    if (showImportConfirm) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showImportConfirm = false },
+            title = { Text(stringResource(R.string.import_confirm_title)) },
+            text = { Text(stringResource(R.string.import_confirm_message)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showImportConfirm = false
+                    haptics.confirm()
+                    importLauncherPending = true
+                }) {
+                    Text(stringResource(R.string.import_confirm_yes))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showImportConfirm = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 
     Scaffold(
@@ -507,18 +549,10 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                val importLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.OpenDocument()
-                ) { uri ->
-                    if (uri != null) {
-                        haptics.confirm()
-                        viewModel.importCsv(context, uri)
-                    }
-                }
                 androidx.compose.material3.OutlinedButton(
                     onClick = {
                         haptics.tap()
-                        importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values", "*/*"))
+                        showImportConfirm = true
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -527,7 +561,7 @@ fun SettingsScreen(
             }
 
             // ── Statistics ──
-            SettingsCard(title = "Statistics") {
+            SettingsCard(title = stringResource(R.string.settings_statistics)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -541,12 +575,12 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "View attendance statistics",
+                            stringResource(R.string.settings_view_stats),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
-                            "Overview, streaks, subject breakdown, trends",
+                            stringResource(R.string.settings_view_stats_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
