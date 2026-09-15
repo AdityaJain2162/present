@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -23,10 +22,12 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.ui.theme.CardShape
+import com.aditya.present.ui.theme.LocalCardStyle
+import com.aditya.present.ui.theme.LocalCompactMode
+import com.aditya.present.ui.theme.LocalShowPercentageOnCards
 
 @Composable
 fun SubjectCard(
@@ -57,60 +62,103 @@ fun SubjectCard(
     var expanded by remember { mutableStateOf(false) }
     val targetPct = subject.targetAttendancePercent / 100f
     val isSafe = percentage >= targetPct
+    val showPercentage = LocalShowPercentageOnCards.current
+    val compact = LocalCompactMode.current
+    val cardPadding = if (compact) 12.dp else 16.dp
+    val progressHeight = if (compact) 4.dp else 6.dp
 
-    Card(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize()
-            .semantics { contentDescription = "Subject ${subject.name}. ${if (todayStatus != null) "Marked ${todayStatus.name.lowercase()} today" else "Not marked today"}. Tap to mark attendance" },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    val cardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    )
+
+    val cardModifier = modifier
+        .fillMaxWidth()
+        .animateContentSize()
+        .semantics { contentDescription = "Subject ${subject.name}. ${if (todayStatus != null) "Marked ${todayStatus.name.lowercase()} today" else "Not marked today"}. Tap to mark attendance" }
+
+    when (LocalCardStyle.current) {
+        "outlined" -> OutlinedCard(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = CardShape,
+            colors = cardColors,
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus) { expanded = !expanded } }
+        "elevated" -> ElevatedCard(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = CardShape,
+            colors = cardColors,
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus) { expanded = !expanded } }
+        else -> Card(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = CardShape,
+            colors = cardColors,
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus) { expanded = !expanded } }
+    }
+}
+
+@Composable
+private fun SubjectCardContent(
+    subject: SubjectEntity,
+    attendedUnits: Int,
+    totalUnits: Int,
+    percentage: Float,
+    isSafe: Boolean,
+    showPercentage: Boolean,
+    compact: Boolean,
+    cardPadding: androidx.compose.ui.unit.Dp,
+    progressHeight: androidx.compose.ui.unit.Dp,
+    expanded: Boolean,
+    todayStatus: AttendanceStatus?,
+    onToggleExpand: () -> Unit,
+) {
+    Column(modifier = Modifier.padding(cardPadding)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    // Color dot
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(CircleShape)
-                            .background(Color(subject.color)),
+                // Color dot
+                Box(
+                    modifier = Modifier
+                        .size(if (compact) 10.dp else 12.dp)
+                        .clip(CircleShape)
+                        .background(Color(subject.color)),
+                )
+                Spacer(modifier = Modifier.width(if (compact) 8.dp else 12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = subject.name,
+                        style = if (compact) MaterialTheme.typography.titleSmall
+                        else MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = subject.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                        )
-                        Text(
-                            text = buildString {
-                                append(subject.acronym)
-                                append(" • $attendedUnits/$totalUnits classes")
-                                if (subject.teacherName.isNotBlank()) {
-                                    append(" • ${subject.teacherName}")
-                                }
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Text(
+                        text = buildString {
+                            append(subject.acronym)
+                            append(" • $attendedUnits/$totalUnits classes")
+                            if (subject.teacherName.isNotBlank()) {
+                                append(" • ${subject.teacherName}")
+                            }
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Today's status badge
-                    if (todayStatus != null) {
-                        StatusBadge(status = todayStatus)
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Today's status badge
+                if (todayStatus != null) {
+                    StatusBadge(status = todayStatus)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                if (showPercentage) {
                     Text(
                         text = "${(percentage * 100).toInt()}%",
                         style = MaterialTheme.typography.titleMedium,
@@ -118,60 +166,60 @@ fun SubjectCard(
                         color = if (isSafe) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.error,
                     )
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(
-                            imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
-                            else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = if (expanded) "Collapse" else "Expand",
-                        )
-                    }
+                }
+                IconButton(onClick = onToggleExpand) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
+                        else Icons.Filled.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { percentage.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = if (isSafe) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error,
+        }
+        Spacer(modifier = Modifier.height(if (compact) 6.dp else 8.dp))
+        LinearProgressIndicator(
+            progress = { percentage.coerceIn(0f, 1f) },
+            modifier = Modifier.fillMaxWidth().height(progressHeight),
+            color = if (isSafe) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.error,
+        )
+        if (expanded) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Target: ${subject.targetAttendancePercent.toInt()}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (expanded) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Target: ${subject.targetAttendancePercent.toInt()}%",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Text(
+                text = "Attended: $attendedUnits / $totalUnits classes",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (totalUnits > 0) {
+                val classesToSkip = BunkCalculatorHelper.classesCanBunk(
+                    attended = attendedUnits,
+                    total = totalUnits,
+                    target = subject.targetAttendancePercent / 100f,
                 )
-                Text(
-                    text = "Attended: $attendedUnits / $totalUnits classes",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                val classesToAttend = BunkCalculatorHelper.classesToAttend(
+                    attended = attendedUnits,
+                    total = totalUnits,
+                    target = subject.targetAttendancePercent / 100f,
                 )
-                if (totalUnits > 0) {
-                    val classesToSkip = BunkCalculatorHelper.classesCanBunk(
-                        attended = attendedUnits,
-                        total = totalUnits,
-                        target = subject.targetAttendancePercent / 100f,
+                if (classesToSkip > 0) {
+                    Text(
+                        text = "Can safely skip $classesToSkip more classes",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
                     )
-                    val classesToAttend = BunkCalculatorHelper.classesToAttend(
-                        attended = attendedUnits,
-                        total = totalUnits,
-                        target = subject.targetAttendancePercent / 100f,
+                } else if (classesToAttend > 0) {
+                    Text(
+                        text = "Attend next $classesToAttend classes to reach target",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium,
                     )
-                    if (classesToSkip > 0) {
-                        Text(
-                            text = "Can safely skip $classesToSkip more classes",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    } else if (classesToAttend > 0) {
-                        Text(
-                            text = "Attend next $classesToAttend classes to reach target",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
                 }
             }
         }

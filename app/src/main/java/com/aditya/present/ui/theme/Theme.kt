@@ -163,6 +163,9 @@ fun hctDarkScheme(seed: Color): ColorScheme {
 
 val LocalAccentPreset = compositionLocalOf { AccentPresets[0] }
 val LocalAnimationsEnabled = compositionLocalOf { true }
+val LocalCardStyle = compositionLocalOf { "filled" }
+val LocalShowPercentageOnCards = compositionLocalOf { true }
+val LocalCompactMode = compositionLocalOf { false }
 
 // ── Pastel (CUSTOM) color scheme ──────────────────────────────────
 // Cool pastel palette that looks the same in any lighting — designed
@@ -212,6 +215,9 @@ fun PresentTheme(
     accentName: String = "Teal",
     dynamicColor: Boolean = true,
     animationsEnabled: Boolean = true,
+    cardStyle: String = "filled",
+    showPercentageOnCards: Boolean = true,
+    compactMode: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -260,6 +266,9 @@ fun PresentTheme(
     CompositionLocalProvider(
         LocalAccentPreset provides preset,
         LocalAnimationsEnabled provides animationsEnabled,
+        LocalCardStyle provides cardStyle,
+        LocalShowPercentageOnCards provides showPercentageOnCards,
+        LocalCompactMode provides compactMode,
     ) {
         MaterialTheme(
             colorScheme = animatedScheme,

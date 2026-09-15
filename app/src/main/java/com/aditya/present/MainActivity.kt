@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
                 accentName = prefs.accentName,
                 dynamicColor = prefs.dynamicColor,
                 animationsEnabled = prefs.animationsEnabled,
+                cardStyle = prefs.cardStyle,
+                showPercentageOnCards = prefs.showPercentageOnCards,
+                compactMode = prefs.compactMode,
             ) {
                 val haptics = rememberHapticController(
                     enabled = prefs.hapticFeedback,
