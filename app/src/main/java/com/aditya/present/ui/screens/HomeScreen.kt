@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,6 +40,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -80,6 +84,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class SubjectFilter(val label: String) {
+    ALL("All"),
+    BELOW_TARGET("Below Target"),
+    MARKED_TODAY("Marked Today"),
+    UNMARKED("Unmarked"),
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -98,6 +109,8 @@ fun HomeScreen(
     val snackbarHost = remember { SnackbarHostState() }
 
     var markingSubject by remember { mutableStateOf<SubjectWithAttendance?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    var filterMode by remember { mutableStateOf(SubjectFilter.ALL) }
 
     // Show snackbar when attendance is marked
     val lastMarked = uiState.lastMarkedSubject
@@ -318,8 +331,55 @@ fun HomeScreen(
                         LowAttendanceBanner(subjects = lowSubjects)
                     }
 
+                    // Search bar
+                    item {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Search subjects...") },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    // Filter chips
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(SubjectFilter.entries.toList()) { filter ->
+                                FilterChip(
+                                    selected = filterMode == filter,
+                                    onClick = {
+                                        haptics.tap()
+                                        filterMode = filter
+                                    },
+                                    label = { Text(filter.label) },
+                                )
+                            }
+                        }
+                    }
+
                     // Subject list with staggered animation
-                    itemsIndexed(uiState.subjects, key = { _, s -> s.subject.id }) { index, subjectWithAtt ->
+                    itemsIndexed(
+                        uiState.subjects.filter { subject ->
+                            val matchesSearch = searchQuery.isBlank() ||
+                                subject.subject.name.contains(searchQuery, ignoreCase = true) ||
+                                subject.subject.acronym.contains(searchQuery, ignoreCase = true) ||
+                                subject.subject.teacherName.contains(searchQuery, ignoreCase = true)
+                            val matchesFilter = when (filterMode) {
+                                SubjectFilter.ALL -> true
+                                SubjectFilter.BELOW_TARGET -> subject.totalUnits > 0 &&
+                                    subject.percentage < (subject.subject.targetAttendancePercent / 100f)
+                                SubjectFilter.MARKED_TODAY -> subject.todayStatus != null
+                                SubjectFilter.UNMARKED -> subject.todayStatus == null
+                            }
+                            matchesSearch && matchesFilter
+                        },
+                        key = { _, s -> s.subject.id },
+                    ) { index, subjectWithAtt ->
                         val delayMs = if (animations) index * 40 else 0
                         AnimatedVisibility(
                             visible = true,
