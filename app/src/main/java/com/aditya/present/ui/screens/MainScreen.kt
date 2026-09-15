@@ -1,8 +1,11 @@
 package com.aditya.present.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.ui.components.BannerAd
@@ -115,63 +119,68 @@ private fun FloatingNavBar(
         android.content.res.Configuration.UI_MODE_NIGHT_YES
 
     val barColor = if (isDark)
-        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f)
+        MaterialTheme.colorScheme.surfaceContainerHigh
     else
-        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.85f)
+        MaterialTheme.colorScheme.surface
 
     val pillGradient = Brush.horizontalGradient(
         listOf(accentPreset.gradientStart, accentPreset.gradientEnd),
     )
 
+    val pillShape = RoundedCornerShape(16.dp)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
-                    elevation = if (isDark) 8.dp else 6.dp,
+                    elevation = if (isDark) 12.dp else 8.dp,
                     shape = PillShape,
-                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 )
                 .clip(PillShape)
                 .background(barColor)
-                .height(68.dp),
+                .height(72.dp),
         ) {
             val tabWidth = maxWidth / tabs.size
-            val pillWidth = tabWidth
-            val pillHeight = 60.dp
+            val pillWidth = 48.dp
+            val pillHeight = 32.dp
 
             val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
             val indicatorOffset by animateDpAsState(
-                targetValue = tabWidth * selectedIndex,
+                targetValue = (tabWidth * selectedIndex) + (tabWidth - pillWidth) / 2,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
                     stiffness = Spring.StiffnessMediumLow,
                 ),
                 label = "PillSlider",
             )
 
+            // Indicator pill — sits behind the icon only, above the label
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset, y = (68.dp - pillHeight) / 2)
+                    .offset(
+                        x = indicatorOffset,
+                        y = 10.dp,
+                    )
                     .width(pillWidth)
                     .height(pillHeight)
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(pillShape)
                     .background(pillGradient),
             )
 
             Row(
                 modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
             ) {
                 tabs.forEach { tab ->
                     val isSelected = selectedTab == tab
-                    val haptics = LocalHaptics.current
 
                     Column(
                         modifier = Modifier
@@ -183,22 +192,23 @@ private fun FloatingNavBar(
                                 onClick = { onTabSelected(tab) },
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.Top,
                     ) {
+                        Spacer(modifier = Modifier.height(14.dp))
                         Icon(
                             imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
                             contentDescription = tab.label,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(22.dp),
                             tint = if (isSelected) MaterialTheme.colorScheme.onPrimary
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = tab.label,
                             fontSize = 11.sp,
-                            fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.SemiBold
-                            else androidx.compose.ui.text.font.FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            fontWeight = if (isSelected) FontWeight.SemiBold
+                            else FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
                     }
