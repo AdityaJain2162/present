@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -123,7 +124,13 @@ fun HomeScreen(
                     var menuExpanded by remember { mutableStateOf(false) }
 
                     Box {
-                        TextButton(onClick = { menuExpanded = true }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.large)
+                                .clickable { menuExpanded = true }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
                             Column {
                                 Text(
                                     text = stringResource(R.string.app_name),
@@ -141,6 +148,7 @@ fun HomeScreen(
                                             imageVector = Icons.Filled.ArrowDropDown,
                                             contentDescription = stringResource(R.string.home_switch_session),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(18.dp),
                                         )
                                     }
                                 }
@@ -195,19 +203,32 @@ fun HomeScreen(
                             )
                         }
                     }
-                }
+                },
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable {
+                                haptics.tap()
+                                uiState.activeSession?.let { onAddSubject(it.id) }
+                            }
+                            .semantics { contentDescription = context.getString(R.string.home_add_subject_cd) },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                },
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    haptics.tap()
-                    uiState.activeSession?.let { onAddSubject(it.id) }
-                },
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.add_subject)) },
-                modifier = Modifier.semantics { contentDescription = context.getString(R.string.home_add_subject_cd) }
-            )
         }
     ) { padding ->
         when {
