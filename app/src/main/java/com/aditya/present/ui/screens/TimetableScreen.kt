@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -36,6 +37,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -47,6 +49,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,7 +76,9 @@ import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.theme.CardShape
+import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalHaptics
+import com.aditya.present.ui.theme.primaryGradient
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -482,14 +488,24 @@ private fun AddSlotDialog(
     onAdd: (subjectId: Long, startTimeMinutes: Int, units: Int) -> Unit,
 ) {
     val haptics = LocalHaptics.current
+    val accentPreset = LocalAccentPreset.current
     var selectedSubject by remember { mutableStateOf<SubjectEntity?>(null) }
     var subjectMenuExpanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var selectedHour by remember { mutableStateOf(9) }
     var selectedMinute by remember { mutableStateOf(0) }
     var units by remember { mutableStateOf(1) }
+    var customDuration by remember { mutableStateOf("") }
+    var useCustomDuration by remember { mutableStateOf(false) }
 
     val dayNames = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
+    val effectiveUnits = if (useCustomDuration && customDuration.isNotBlank()) {
+        val mins = customDuration.toIntOrNull() ?: 60
+        (mins / 60.0).let { if (it % 1 == 0.0) it.toInt() else it.toInt() + 1 }
+    } else {
+        units
+    }
 
     if (showTimePicker) {
         val timeState = rememberTimePickerState(
@@ -515,10 +531,28 @@ private fun AddSlotDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.timetable_add_class_slot)) },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(primaryGradient(accentPreset)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(stringResource(R.string.timetable_add_class_slot), fontWeight = FontWeight.Bold)
+            }
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.timetable_day_label, dayNames[selectedDay]), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.timetable_day_label, dayNames[selectedDay]),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
 
                 // Subject dropdown
                 Box {
@@ -538,7 +572,18 @@ private fun AddSlotDialog(
                     ) {
                         subjects.forEach { subject ->
                             DropdownMenuItem(
-                                text = { Text(subject.name) },
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(subject.color)),
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(subject.name)
+                                    }
+                                },
                                 onClick = {
                                     haptics.tap()
                                     selectedSubject = subject
@@ -559,24 +604,47 @@ private fun AddSlotDialog(
                         haptics.tap()
                         showTimePicker = true
                     },
+                    trailingIcon = {
+                        Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(20.dp))
+                    },
                 )
 
-                // Units selector
-                Text(stringResource(R.string.timetable_duration, units))
+                // Duration selector
+                Text(
+                    if (useCustomDuration) stringResource(R.string.timetable_custom_duration)
+                    else stringResource(R.string.timetable_duration, units),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(1, 2, 3).forEach { u ->
-                        AssistChip(
+                        FilterChip(
+                            selected = !useCustomDuration && units == u,
                             onClick = {
                                 haptics.tap()
+                                useCustomDuration = false
                                 units = u
                             },
                             label = { Text("$u hr") },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = if (units == u) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceContainer,
-                            ),
                         )
                     }
+                    FilterChip(
+                        selected = useCustomDuration,
+                        onClick = {
+                            haptics.tap()
+                            useCustomDuration = true
+                        },
+                        label = { Text("Custom") },
+                    )
+                }
+                if (useCustomDuration) {
+                    OutlinedTextField(
+                        value = customDuration,
+                        onValueChange = { customDuration = it.filter { c -> c.isDigit() } },
+                        label = { Text(stringResource(R.string.timetable_duration_minutes, 60)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         },
@@ -585,10 +653,10 @@ private fun AddSlotDialog(
                 onClick = {
                     selectedSubject?.let { subject ->
                         val minutes = selectedHour * 60 + selectedMinute
-                        onAdd(subject.id, minutes, units)
+                        onAdd(subject.id, minutes, effectiveUnits)
                     }
                 },
-                enabled = selectedSubject != null,
+                enabled = selectedSubject != null && (!useCustomDuration || customDuration.isNotBlank()),
             ) { Text(stringResource(R.string.timetable_add)) }
         },
         dismissButton = {
