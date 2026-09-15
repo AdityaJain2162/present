@@ -23,6 +23,21 @@ import javax.inject.Singleton
 )
 abstract class PresentDatabase : RoomDatabase() {
     abstract fun dao(): PresentDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: PresentDatabase? = null
+
+        fun get(context: Context): PresentDatabase {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    PresentDatabase::class.java,
+                    "present.db",
+                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
+            }
+        }
+    }
 }
 
 @Module

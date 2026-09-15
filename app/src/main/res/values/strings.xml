@@ -205,4 +205,16 @@
     <string name="settings_haptic_intensity">Haptic Intensity</string>
     <string name="settings_haptic_intensity_desc">How strong the vibration feels</string>
     <string name="settings_about_desc_full">Developer info, links, privacy, license</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_class_notifications">Class Reminders</string>
+    <string name="settings_class_notifications_desc">Notify before scheduled classes with quick mark actions</string>
+    <string name="settings_notif_lead_time">Reminder lead time: %1$d min</string>
+    <string name="settings_notif_lead_time_desc">Minutes before class to send the notification</string>
+    <string name="settings_auto_mark_enabled">Auto-mark unmarked classes</string>
+    <string name="settings_auto_mark_enabled_desc">Mark unmarked classes as absent at the configured hour</string>
+    <string name="notif_class_starting">Class at %1$s — mark attendance</string>
+    <string name="notif_auto_mark_title">Auto-marked classes</string>
+    <string name="notif_auto_mark_body">%1$d unmarked class(es) marked as absent</string>
 </resources>

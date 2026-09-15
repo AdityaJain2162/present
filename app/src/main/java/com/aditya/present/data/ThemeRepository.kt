@@ -34,6 +34,9 @@ data class ThemePrefs(
     val showPercentageOnCards: Boolean = true,
     val compactMode: Boolean = false,
     val hapticIntensity: String = "MEDIUM", // LOW, MEDIUM, HIGH
+    val classNotificationsEnabled: Boolean = true,
+    val notificationLeadMinutes: Int = 10,
+    val autoMarkEnabled: Boolean = false,
 )
 
 @Singleton
@@ -52,6 +55,9 @@ class ThemeRepository @Inject constructor(
     private val showPctKey = booleanPreferencesKey("show_pct_on_cards")
     private val compactKey = booleanPreferencesKey("compact_mode")
     private val hapticIntensityKey = stringPreferencesKey("haptic_intensity")
+    private val classNotifKey = booleanPreferencesKey("class_notifications_enabled")
+    private val notifLeadKey = intPreferencesKey("notification_lead_minutes")
+    private val autoMarkEnabledKey = booleanPreferencesKey("auto_mark_enabled")
 
     val themePrefs: Flow<ThemePrefs> = context.dataStore.data.map { prefs ->
         ThemePrefs(
@@ -67,6 +73,9 @@ class ThemeRepository @Inject constructor(
             showPercentageOnCards = prefs[showPctKey] ?: true,
             compactMode = prefs[compactKey] ?: false,
             hapticIntensity = prefs[hapticIntensityKey] ?: "MEDIUM",
+            classNotificationsEnabled = prefs[classNotifKey] ?: true,
+            notificationLeadMinutes = prefs[notifLeadKey] ?: 10,
+            autoMarkEnabled = prefs[autoMarkEnabledKey] ?: false,
         )
     }
 
@@ -118,6 +127,18 @@ class ThemeRepository @Inject constructor(
 
     suspend fun setHapticIntensity(intensity: String) {
         context.dataStore.edit { it[hapticIntensityKey] = intensity }
+    }
+
+    suspend fun setClassNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[classNotifKey] = enabled }
+    }
+
+    suspend fun setNotificationLeadMinutes(minutes: Int) {
+        context.dataStore.edit { it[notifLeadKey] = minutes.coerceIn(0, 60) }
+    }
+
+    suspend fun setAutoMarkEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[autoMarkEnabledKey] = enabled }
     }
 }
 

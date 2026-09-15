@@ -1,18 +1,22 @@
 package com.aditya.present.ui.screens
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aditya.present.data.AcademicSessionEntity
 import com.aditya.present.data.ClassSlotEntity
 import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.SubjectEntity
+import com.aditya.present.data.ThemeRepository
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.util.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -38,6 +42,8 @@ data class TimetableUiState(
 @HiltViewModel
 class TimetableViewModel @Inject constructor(
     private val repository: PresentRepository,
+    private val themeRepository: ThemeRepository,
+    private val application: Application,
 ) : ViewModel() {
 
     // MutableStateFlow so day changes trigger Flow re-collection
@@ -116,8 +122,59 @@ class TimetableViewModel @Inject constructor(
 
     fun addSlot(subjectId: Long, dayOfWeek: Int, startTimeMinutes: Int, units: Int) {
         viewModelScope.launch {
-            repository.insertSlot(subjectId, dayOfWeek, startTimeMinutes, units)
+            val slotId = repository.insertSlot(subjectId, dayOfWeek, startTimeMinutes, units)
+            scheduleClassReminder(slotId, subjectId, dayOfWeek, startTimeMinutes)
         }
+    }
+
+    private suspend fun scheduleClassReminder(
+        slotId: Long,
+        subjectId: Long,
+        dayOfWeek: Int,
+        startTimeMinutes: Int,
+    ) {
+        val prefs = themeRepository.themePrefs.first()
+        if (!prefs.classNotificationsEnabled) return
+
+        val subject = repository.getSubjectById(subjectId) ?: return
+        val slot = ClassSlotEntity(
+            id = slotId,
+            subjectId = subjectId,
+            dayOfWeek = dayOfWeek,
+            startTimeMinutes = startTimeMinutes,
+        )
+
+        // Find the next occurrence of this day of week
+        val today = java.util.Calendar.getInstance()
+        val todayDayOfWeek = today.get(java.util.Calendar.DAY_OF_WEEK)
+        var daysUntil = (dayOfWeek - todayDayOfWeek + 7) % 7
+        if (daysUntil == 0) {
+            // Today — check if the class hasn't started yet
+            val classTime = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, startTimeMinutes / 60)
+                set(java.util.Calendar.MINUTE, startTimeMinutes % 60)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            if (classTime.timeInMillis <= System.currentTimeMillis()) {
+                daysUntil = 7 // schedule for next week
+            }
+        }
+        val nextDate = java.util.Calendar.getInstance().apply {
+            add(java.util.Calendar.DAY_OF_YEAR, daysUntil)
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+
+        AlarmScheduler.scheduleClassReminder(
+            context = application,
+            slot = slot,
+            subject = subject,
+            dateMillis = nextDate.timeInMillis,
+            leadMinutes = prefs.notificationLeadMinutes,
+        )
     }
 
     private val markMutex = Mutex()
@@ -132,6 +189,7 @@ class TimetableViewModel @Inject constructor(
 
     fun deleteSlot(slotId: Long) {
         viewModelScope.launch {
+            AlarmScheduler.cancelClassReminder(application, slotId)
             repository.deleteSlot(slotId)
         }
     }

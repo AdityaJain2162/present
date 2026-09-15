@@ -8,8 +8,10 @@ import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.ThemePrefs
 import com.aditya.present.data.ThemeRepository
 import com.aditya.present.domain.ThemeMode
+import com.aditya.present.util.AlarmScheduler
 import com.aditya.present.util.ExportUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val themeRepository: ThemeRepository,
     private val presentRepository: PresentRepository,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     private val _exportMessage = MutableStateFlow<String?>(null)
@@ -83,6 +86,26 @@ class SettingsViewModel @Inject constructor(
 
     fun setHapticIntensity(intensity: String) {
         viewModelScope.launch { themeRepository.setHapticIntensity(intensity) }
+    }
+
+    fun setClassNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch { themeRepository.setClassNotificationsEnabled(enabled) }
+    }
+
+    fun setNotificationLeadMinutes(minutes: Int) {
+        viewModelScope.launch { themeRepository.setNotificationLeadMinutes(minutes) }
+    }
+
+    fun setAutoMarkEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            themeRepository.setAutoMarkEnabled(enabled)
+            if (enabled) {
+                val prefs = themePrefs.value
+                AlarmScheduler.scheduleAutoMark(appContext, prefs.autoMarkHour)
+            } else {
+                AlarmScheduler.cancelAutoMark(appContext)
+            }
+        }
     }
 
     fun exportCsv(context: Context, uri: Uri) {

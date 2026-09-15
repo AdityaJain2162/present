@@ -56,5 +56,35 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="remove" />
+
+        <!-- Class reminder alarm receiver -->
+        <receiver
+            android:name=".service.ClassAlarmReceiver"
+            android:exported="false" />
+
+        <!-- Notification action receiver (Present/Absent/Cancel from notification) -->
+        <receiver
+            android:name=".service.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.aditya.present.ACTION_MARK" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Auto-mark receiver -->
+        <receiver
+            android:name=".service.AutoMarkReceiver"
+            android:exported="false" />
+
+        <!-- Boot receiver to re-schedule alarms after reboot -->
+        <receiver
+            android:name=".service.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

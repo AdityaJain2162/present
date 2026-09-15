@@ -204,6 +204,90 @@ fun SettingsScreen(
                 )
             }
 
+            // ── Notifications ──
+            SettingsCard(title = stringResource(R.string.settings_notifications)) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    // Class reminders toggle
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.settings_class_notifications),
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                stringResource(R.string.settings_class_notifications_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        Switch(
+                            checked = prefs.classNotificationsEnabled,
+                            onCheckedChange = {
+                                haptics.confirm()
+                                viewModel.setClassNotificationsEnabled(it)
+                            },
+                        )
+                    }
+
+                    if (prefs.classNotificationsEnabled) {
+                        HorizontalDivider()
+                        Text(
+                            stringResource(R.string.settings_notif_lead_time, prefs.notificationLeadMinutes),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            stringResource(R.string.settings_notif_lead_time_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Slider(
+                            value = prefs.notificationLeadMinutes.toFloat(),
+                            onValueChange = { viewModel.setNotificationLeadMinutes(it.toInt()) },
+                            valueRange = 0f..30f,
+                            steps = 5,
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    // Auto-mark toggle
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.settings_auto_mark_enabled),
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                stringResource(R.string.settings_auto_mark_enabled_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        Switch(
+                            checked = prefs.autoMarkEnabled,
+                            onCheckedChange = {
+                                haptics.confirm()
+                                viewModel.setAutoMarkEnabled(it)
+                            },
+                        )
+                    }
+                }
+            }
+
             // ── Weekend Config ──
             SettingsCard(title = stringResource(R.string.settings_weekend_days)) {
                 Text(
