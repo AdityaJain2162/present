@@ -1,9 +1,12 @@
 package com.aditya.present.ui.theme
 
 import android.os.Build
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -11,6 +14,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 @Suppress("unused")
@@ -67,13 +71,6 @@ private fun buildDarkScheme(p: AccentPreset) = darkColorScheme(
     surfaceContainer = Color_DarkSurfaceContainer,
 )
 
-private val AmoledOverride = darkColorScheme(
-    background = Color(0xFF000000),
-    surface = Color(0xFF000000),
-    surfaceVariant = Color(0xFF0A0A0A),
-    surfaceContainer = Color(0xFF111111),
-)
-
 val LocalAccentPreset = compositionLocalOf { AccentPresets[0] }
 val LocalAnimationsEnabled = compositionLocalOf { true }
 
@@ -88,7 +85,7 @@ fun PresentTheme(
     val context = LocalContext.current
     val preset = accentPresetByName(accentName)
 
-    val colorScheme = when (themeMode) {
+    val targetScheme = when (themeMode) {
         com.aditya.present.domain.ThemeMode.SYSTEM -> {
             val isDark = isSystemInDarkTheme()
             if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -117,19 +114,64 @@ fun PresentTheme(
         }
     }
 
+    // Animated color scheme — smooth spring transitions when accent/theme changes
+    val animatedScheme = if (animationsEnabled) animateColorScheme(targetScheme) else targetScheme
+
     CompositionLocalProvider(
         LocalAccentPreset provides preset,
         LocalAnimationsEnabled provides animationsEnabled,
     ) {
         MaterialTheme(
-            colorScheme = colorScheme,
+            colorScheme = animatedScheme,
             typography = PresentTypography,
             content = content,
         )
     }
 }
 
-// Composite helper (simplified)
+@Composable
+private fun animateColorScheme(target: ColorScheme): ColorScheme {
+    val spec = spring<Color>(stiffness = Spring.StiffnessLow)
+    return ColorScheme(
+        primary = animateColorAsState(target.primary, spec, label = "primary").value,
+        onPrimary = animateColorAsState(target.onPrimary, spec, label = "onPrimary").value,
+        primaryContainer = animateColorAsState(target.primaryContainer, spec, label = "pc").value,
+        onPrimaryContainer = animateColorAsState(target.onPrimaryContainer, spec, label = "opc").value,
+        inversePrimary = animateColorAsState(target.inversePrimary, spec, label = "ip").value,
+        secondary = animateColorAsState(target.secondary, spec, label = "sec").value,
+        onSecondary = animateColorAsState(target.onSecondary, spec, label = "os").value,
+        secondaryContainer = animateColorAsState(target.secondaryContainer, spec, label = "sc").value,
+        onSecondaryContainer = animateColorAsState(target.onSecondaryContainer, spec, label = "osc").value,
+        tertiary = animateColorAsState(target.tertiary, spec, label = "ter").value,
+        onTertiary = animateColorAsState(target.onTertiary, spec, label = "ot").value,
+        tertiaryContainer = animateColorAsState(target.tertiaryContainer, spec, label = "tc").value,
+        onTertiaryContainer = animateColorAsState(target.onTertiaryContainer, spec, label = "otc").value,
+        background = animateColorAsState(target.background, spec, label = "bg").value,
+        onBackground = animateColorAsState(target.onBackground, spec, label = "obg").value,
+        surface = animateColorAsState(target.surface, spec, label = "surf").value,
+        onSurface = animateColorAsState(target.onSurface, spec, label = "osurf").value,
+        surfaceVariant = animateColorAsState(target.surfaceVariant, spec, label = "sv").value,
+        onSurfaceVariant = animateColorAsState(target.onSurfaceVariant, spec, label = "osv").value,
+        surfaceTint = animateColorAsState(target.surfaceTint, spec, label = "st").value,
+        inverseSurface = animateColorAsState(target.inverseSurface, spec, label = "is").value,
+        inverseOnSurface = animateColorAsState(target.inverseOnSurface, spec, label = "ios").value,
+        error = animateColorAsState(target.error, spec, label = "err").value,
+        onError = animateColorAsState(target.onError, spec, label = "oerr").value,
+        errorContainer = animateColorAsState(target.errorContainer, spec, label = "ec").value,
+        onErrorContainer = animateColorAsState(target.onErrorContainer, spec, label = "oec").value,
+        outline = animateColorAsState(target.outline, spec, label = "ol").value,
+        outlineVariant = animateColorAsState(target.outlineVariant, spec, label = "olv").value,
+        scrim = animateColorAsState(target.scrim, spec, label = "scrim").value,
+        surfaceBright = animateColorAsState(target.surfaceBright, spec, label = "sb").value,
+        surfaceDim = animateColorAsState(target.surfaceDim, spec, label = "sd").value,
+        surfaceContainer = animateColorAsState(target.surfaceContainer, spec, label = "scont").value,
+        surfaceContainerLow = animateColorAsState(target.surfaceContainerLow, spec, label = "scl").value,
+        surfaceContainerLowest = animateColorAsState(target.surfaceContainerLowest, spec, label = "sclst").value,
+        surfaceContainerHigh = animateColorAsState(target.surfaceContainerHigh, spec, label = "sch").value,
+        surfaceContainerHighest = animateColorAsState(target.surfaceContainerHighest, spec, label = "schst").value,
+    )
+}
+
 private fun Color.compositeOver(background: Color): Color {
     val a = alpha + background.alpha * (1f - alpha)
     val r = (red * alpha + background.red * background.alpha * (1f - alpha)) / a

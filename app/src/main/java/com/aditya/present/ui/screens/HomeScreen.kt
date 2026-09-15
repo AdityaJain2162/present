@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.ui.components.EmptyState
 import com.aditya.present.ui.components.SubjectCard
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
@@ -99,8 +100,17 @@ fun HomeScreen(
             }
             uiState.subjects.isEmpty() -> {
                 EmptyState(
+                    icon = Icons.Filled.Add,
+                    title = "Welcome to Present!",
+                    subtitle = "Add your first subject to start tracking attendance and never worry about falling below your target again.",
                     modifier = Modifier.fillMaxSize().padding(padding),
-                    onAddSubject = onAddSubject,
+                    action = {
+                        Button(onClick = onAddSubject, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Filled.Add, contentDescription = null)
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Add Your First Subject", fontWeight = FontWeight.Medium)
+                        }
+                    },
                 )
             }
             else -> {
@@ -179,52 +189,4 @@ private fun OverallAttendanceCard(
     }
 }
 
-@Composable
-private fun EmptyState(
-    modifier: Modifier,
-    onAddSubject: () -> Unit,
-) {
-    val accentPreset = LocalAccentPreset.current
 
-    Column(
-        modifier = modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        // Gradient logo
-        Box(
-            modifier = Modifier
-                .size(88.dp)
-                .clip(CircleShape)
-                .background(primaryGradient(accentPreset)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "P",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-            text = "Welcome to Present!",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Add your first subject to start tracking attendance and never worry about falling below your target again.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(28.dp))
-        Button(onClick = onAddSubject, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Add, contentDescription = null)
-            Spacer(modifier = Modifier.size(8.dp))
-            Text("Add Your First Subject", fontWeight = FontWeight.Medium)
-        }
-    }
-}
