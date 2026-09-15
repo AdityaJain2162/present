@@ -109,6 +109,9 @@
     <string name="timetable_day_label">Day: %1$s</string>
     <string name="timetable_subject">Subject</string>
     <string name="timetable_select">Select</string>
+    <string name="timetable_start_time">Start time</string>
+    <string name="timetable_duration">Duration: %1$d hour(s)</string>
+    <string name="timetable_add">Add</string>
     <string name="timetable_units">%1$d units</string>
     <string name="timetable_until">until %1$s</string>
     <string name="timetable_select_day">Select %1$s</string>

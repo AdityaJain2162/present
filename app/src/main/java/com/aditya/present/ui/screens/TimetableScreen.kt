@@ -58,12 +58,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aditya.present.R
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.components.EmptyState
@@ -78,6 +81,7 @@ fun TimetableScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val haptics = LocalHaptics.current
+    val context = LocalContext.current
     val snackbarHost = remember { SnackbarHostState() }
 
     var selectedDay by remember { mutableStateOf(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1) }
@@ -94,15 +98,15 @@ fun TimetableScreen(
     LaunchedEffect(lastMarked) {
         lastMarked?.let { (name, status) ->
             val statusText = when (status) {
-                AttendanceStatus.PRESENT -> "Present"
-                AttendanceStatus.ABSENT -> "Absent"
-                AttendanceStatus.CANCELLED -> "Cancelled"
-                AttendanceStatus.HOLIDAY -> "Holiday"
-                AttendanceStatus.ON_DUTY -> "On Duty"
+                AttendanceStatus.PRESENT -> context.getString(R.string.status_present)
+                AttendanceStatus.ABSENT -> context.getString(R.string.status_absent)
+                AttendanceStatus.CANCELLED -> context.getString(R.string.status_cancelled)
+                AttendanceStatus.HOLIDAY -> context.getString(R.string.status_holiday)
+                AttendanceStatus.ON_DUTY -> context.getString(R.string.status_on_duty)
             }
             snackbarHost.showSnackbar(
-                message = "$name marked $statusText",
-                actionLabel = "UNDO",
+                message = context.getString(R.string.home_marked_status, name, statusText),
+                actionLabel = context.getString(R.string.home_undo),
                 withDismissAction = true,
             )
             lastMarked = null
@@ -112,7 +116,7 @@ fun TimetableScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHost) },
         topBar = {
-            TopAppBar(title = { Text("Timetable", fontWeight = FontWeight.Bold) })
+            TopAppBar(title = { Text(stringResource(R.string.timetable_title), fontWeight = FontWeight.Bold) })
         },
         floatingActionButton = {
             if (uiState.subjects.isNotEmpty()) {
@@ -122,7 +126,7 @@ fun TimetableScreen(
                         showAddSlot = true
                     },
                     icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text("Add Slot") },
+                    text = { Text(stringResource(R.string.timetable_add_slot)) },
                 )
             }
         }
@@ -154,7 +158,7 @@ fun TimetableScreen(
                                 selectedDay = index
                             }
                             .padding(vertical = 12.dp, horizontal = 4.dp)
-                            .semantics { contentDescription = "Select $dayName" },
+                            .semantics { contentDescription = context.getString(R.string.timetable_select_day, dayName) },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
@@ -194,16 +198,16 @@ fun TimetableScreen(
                 uiState.subjects.isEmpty() -> {
                     EmptyState(
                         icon = Icons.Filled.Add,
-                        title = "No subjects yet",
-                        subtitle = "Add a subject first from the Home tab, then come back to create your timetable.",
+                        title = stringResource(R.string.timetable_no_subjects),
+                        subtitle = stringResource(R.string.timetable_no_subjects_desc),
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
                 uiState.slotsForDay.isEmpty() -> {
                     EmptyState(
                         icon = Icons.Filled.Swipe,
-                        title = "No classes on ${dayNames[selectedDay]}",
-                        subtitle = "Tap \"Add Slot\" to schedule a class for this day. Swipe cards left/right to mark attendance.",
+                        title = stringResource(R.string.timetable_no_classes, dayNames[selectedDay]),
+                        subtitle = stringResource(R.string.timetable_no_classes_desc),
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -255,6 +259,7 @@ private fun SwipeableTimetableCard(
     todayStatus: AttendanceStatus?,
     onMark: (AttendanceStatus) -> Unit,
 ) {
+    val context = LocalContext.current
     var offsetX by remember { mutableStateOf(0f) }
     val animatedOffset by animateFloatAsState(targetValue = offsetX, label = "offset")
 
@@ -327,7 +332,11 @@ private fun SwipeableTimetableCard(
                     }
                 }
                 .semantics {
-                    contentDescription = "${subject.name} at $timeText. ${if (todayStatus != null) "Marked ${todayStatus.name.lowercase()}" else "Swipe right for present, left for absent"}."
+                    contentDescription = if (todayStatus != null) {
+                        context.getString(R.string.timetable_marked_status, subject.name, timeText, todayStatus.name.lowercase())
+                    } else {
+                        context.getString(R.string.timetable_swipe_hint, subject.name, timeText)
+                    }
                 },
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -346,7 +355,7 @@ private fun SwipeableTimetableCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = String.format("until %02d:%02d", endHour, endMinute),
+                        text = stringResource(R.string.timetable_until, String.format("%02d:%02d", endHour, endMinute)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -379,7 +388,7 @@ private fun SwipeableTimetableCard(
                     }
                     if (units > 1) {
                         Text(
-                            text = "$units units",
+                            text = stringResource(R.string.timetable_units, units),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -397,16 +406,16 @@ private fun SwipeableTimetableCard(
 
 @Composable
 private fun StatusPill(status: AttendanceStatus) {
-    val (color, label) = when (status) {
-        AttendanceStatus.PRESENT -> Color(0xFF4CAF50) to "Present"
-        AttendanceStatus.ABSENT -> Color(0xFFEF4444) to "Absent"
-        AttendanceStatus.CANCELLED -> Color(0xFFFF9800) to "Cancelled"
-        AttendanceStatus.HOLIDAY -> Color(0xFF9E9E9E) to "Holiday"
-        AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary to "On Duty"
+    val (color, labelRes) = when (status) {
+        AttendanceStatus.PRESENT -> Color(0xFF4CAF50) to R.string.status_present
+        AttendanceStatus.ABSENT -> Color(0xFFEF4444) to R.string.status_absent
+        AttendanceStatus.CANCELLED -> Color(0xFFFF9800) to R.string.status_cancelled
+        AttendanceStatus.HOLIDAY -> Color(0xFF9E9E9E) to R.string.status_holiday
+        AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary to R.string.status_on_duty
     }
     AssistChip(
         onClick = {},
-        label = { Text(label, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+        label = { Text(stringResource(labelRes), fontSize = 11.sp, fontWeight = FontWeight.Medium) },
         leadingIcon = {
             Box(
                 modifier = Modifier
@@ -452,10 +461,10 @@ private fun AddSlotDialog(
                     selectedHour = timeState.hour
                     selectedMinute = timeState.minute
                     showTimePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
             },
             text = { TimePicker(state = timeState) },
         )
@@ -463,10 +472,10 @@ private fun AddSlotDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Class Slot") },
+        title = { Text(stringResource(R.string.timetable_add_class_slot)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Day: ${dayNames[selectedDay]}", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.timetable_day_label, dayNames[selectedDay]), style = MaterialTheme.typography.bodyMedium)
 
                 // Subject dropdown
                 Box {
@@ -474,10 +483,10 @@ private fun AddSlotDialog(
                         value = selectedSubject?.name ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Subject") },
+                        label = { Text(stringResource(R.string.timetable_subject)) },
                         modifier = Modifier.fillMaxWidth().clickable { subjectMenuExpanded = true },
                         trailingIcon = {
-                            TextButton(onClick = { subjectMenuExpanded = true }) { Text("Select") }
+                            TextButton(onClick = { subjectMenuExpanded = true }) { Text(stringResource(R.string.timetable_select)) }
                         },
                     )
                     DropdownMenu(
@@ -502,7 +511,7 @@ private fun AddSlotDialog(
                     value = String.format("%02d:%02d", selectedHour, selectedMinute),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Start time") },
+                    label = { Text(stringResource(R.string.timetable_start_time)) },
                     modifier = Modifier.fillMaxWidth().clickable {
                         haptics.tap()
                         showTimePicker = true
@@ -510,7 +519,7 @@ private fun AddSlotDialog(
                 )
 
                 // Units selector
-                Text("Duration: $units hour${if (units > 1) "s" else ""}")
+                Text(stringResource(R.string.timetable_duration, units))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(1, 2, 3).forEach { u ->
                         AssistChip(
@@ -537,10 +546,10 @@ private fun AddSlotDialog(
                     }
                 },
                 enabled = selectedSubject != null,
-            ) { Text("Add") }
+            ) { Text(stringResource(R.string.timetable_add)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }

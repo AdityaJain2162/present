@@ -34,10 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
 import com.aditya.present.ui.theme.LocalHaptics
 
@@ -52,6 +55,7 @@ fun AttendanceMarkSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val haptics = LocalHaptics.current
+    val context = LocalContext.current
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -95,7 +99,7 @@ fun AttendanceMarkSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Mark today's attendance",
+                text = stringResource(R.string.mark_today_attendance),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -108,11 +112,11 @@ fun AttendanceMarkSheet(
             ) {
                 MarkButton(
                     icon = Icons.Filled.Check,
-                    label = "Present",
+                    label = stringResource(R.string.status_present),
                     containerColor = Color(0xFF4CAF50),
                     contentColor = Color.White,
                     modifier = Modifier.weight(1f).semantics {
-                        contentDescription = "Mark as present"
+                        contentDescription = context.getString(R.string.mark_as_present)
                     },
                     onClick = {
                         haptics.heavy()
@@ -121,11 +125,11 @@ fun AttendanceMarkSheet(
                 )
                 MarkButton(
                     icon = Icons.Filled.Close,
-                    label = "Absent",
+                    label = stringResource(R.string.status_absent),
                     containerColor = Color(0xFFEF4444),
                     contentColor = Color.White,
                     modifier = Modifier.weight(1f).semantics {
-                        contentDescription = "Mark as absent"
+                        contentDescription = context.getString(R.string.mark_as_absent)
                     },
                     onClick = {
                         haptics.heavy()
@@ -140,11 +144,11 @@ fun AttendanceMarkSheet(
             ) {
                 MarkButton(
                     icon = Icons.Filled.EventBusy,
-                    label = "Cancelled",
+                    label = stringResource(R.string.status_cancelled),
                     containerColor = Color(0xFFFF9800),
                     contentColor = Color.White,
                     modifier = Modifier.weight(1f).semantics {
-                        contentDescription = "Mark as cancelled"
+                        contentDescription = context.getString(R.string.mark_as_cancelled)
                     },
                     onClick = {
                         haptics.confirm()
@@ -153,11 +157,11 @@ fun AttendanceMarkSheet(
                 )
                 MarkButton(
                     icon = Icons.Filled.Work,
-                    label = "On Duty",
+                    label = stringResource(R.string.status_on_duty),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.weight(1f).semantics {
-                        contentDescription = "Mark as on duty"
+                        contentDescription = context.getString(R.string.mark_as_on_duty)
                     },
                     onClick = {
                         haptics.confirm()

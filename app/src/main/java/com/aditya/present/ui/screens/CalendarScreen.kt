@@ -37,11 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aditya.present.R
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalHaptics
 import java.util.Calendar
@@ -78,7 +80,7 @@ fun CalendarScreen(
                         }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Previous month",
+                                contentDescription = stringResource(R.string.calendar_previous_month),
                             )
                         }
                         Text(
@@ -93,7 +95,7 @@ fun CalendarScreen(
                         }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Next month",
+                                contentDescription = stringResource(R.string.calendar_next_month),
                             )
                         }
                     }
@@ -108,7 +110,7 @@ fun CalendarScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    "No active session",
+                    stringResource(R.string.calendar_no_session),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -125,11 +127,11 @@ fun CalendarScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    LegendDot(Color(0xFF4CAF50), "Present")
-                    LegendDot(Color(0xFFF44336), "Absent")
-                    LegendDot(Color(0xFFFF9800), "Cancelled")
-                    LegendDot(MaterialTheme.colorScheme.primary, "On Duty")
-                    LegendDot(Color(0xFF9C27B0), "Holiday")
+                    LegendDot(Color(0xFF4CAF50), stringResource(R.string.status_present))
+                    LegendDot(Color(0xFFF44336), stringResource(R.string.status_absent))
+                    LegendDot(Color(0xFFFF9800), stringResource(R.string.status_cancelled))
+                    LegendDot(MaterialTheme.colorScheme.primary, stringResource(R.string.status_on_duty))
+                    LegendDot(Color(0xFF9C27B0), stringResource(R.string.status_holiday))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -237,7 +239,7 @@ fun CalendarScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            "Month Summary",
+                            stringResource(R.string.calendar_month_summary),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -251,14 +253,14 @@ fun CalendarScreen(
                         val total = present + absent
                         val pct = if (total > 0) (present * 100 / total) else 0
 
-                        SummaryRow("Present", present, Color(0xFF4CAF50))
-                        SummaryRow("Absent", absent, Color(0xFFF44336))
-                        SummaryRow("Cancelled", cancelled, Color(0xFFFF9800))
-                        SummaryRow("On Duty", onDuty, MaterialTheme.colorScheme.primary)
-                        SummaryRow("Holiday", holiday, Color(0xFF9C27B0))
+                        SummaryRow(stringResource(R.string.status_present), present, Color(0xFF4CAF50))
+                        SummaryRow(stringResource(R.string.status_absent), absent, Color(0xFFF44336))
+                        SummaryRow(stringResource(R.string.status_cancelled), cancelled, Color(0xFFFF9800))
+                        SummaryRow(stringResource(R.string.status_on_duty), onDuty, MaterialTheme.colorScheme.primary)
+                        SummaryRow(stringResource(R.string.status_holiday), holiday, Color(0xFF9C27B0))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Attendance: $pct%",
+                            stringResource(R.string.calendar_attendance_pct, pct),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = if (pct >= 75) MaterialTheme.colorScheme.primary
