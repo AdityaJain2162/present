@@ -92,7 +92,7 @@ fun MainScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f),
-                beyondViewportPageCount = 0,
+                beyondViewportPageCount = 1,
             ) { page ->
                 when (tabs[page]) {
                     Tab.DASHBOARD -> DashboardScreen(

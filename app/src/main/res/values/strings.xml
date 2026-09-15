@@ -94,9 +94,10 @@
     <string name="timetable_no_subjects">No subjects yet</string>
     <string name="timetable_no_subjects_desc">Add a subject first from the Home tab, then come back to create your timetable.</string>
     <string name="timetable_no_classes">No classes on %1$s</string>
-    <string name="timetable_no_classes_desc">Tap \"Add Slot\" to schedule a class for this day. Swipe cards left/right to mark attendance.</string>
-    <string name="timetable_add_class_slot">Add Class Slot</string>
-    <string name="timetable_day_label">Day: %1$s</string>
+    <string name="timetable_no_classes_desc">Tap \"Add Slot\" to schedule a recurring weekly class for this day.</string>
+    <string name="timetable_add_class_slot">Add Recurring Class</string>
+    <string name="timetable_day_label">Every %1$s</string>
+    <string name="timetable_repeats_weekly">Repeats weekly for the entire semester</string>
     <string name="timetable_subject">Subject</string>
     <string name="timetable_select">Select</string>
     <string name="timetable_start_time">Start time</string>
@@ -112,7 +113,7 @@
     <string name="timetable_swipe_hint">%1$s at %2$s. Swipe right for present, left for absent.</string>
     <string name="timetable_today">Today</string>
     <string name="timetable_delete_slot">Delete Slot</string>
-    <string name="timetable_delete_slot_confirm">Remove %1$s from this day\'s timetable?</string>
+    <string name="timetable_delete_slot_confirm">Remove %1$s from your timetable? This will delete all future occurrences.</string>
     <string name="delete">Delete</string>
 
     <!-- Sessions -->

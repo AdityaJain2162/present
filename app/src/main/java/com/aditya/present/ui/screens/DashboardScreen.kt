@@ -227,6 +227,7 @@ fun DashboardScreen(
                             sessionName = uiState.activeSession?.name ?: "",
                             sessionStart = uiState.activeSession?.startDate ?: 0L,
                             sessionEnd = uiState.activeSession?.endDate ?: 0L,
+                            sessionTargetPercent = uiState.activeSession?.targetAttendancePercent ?: 75f,
                             overallAttended = uiState.overallAttended,
                             overallTotal = uiState.overallTotal,
                             monthlyAttended = uiState.monthlyAttended,

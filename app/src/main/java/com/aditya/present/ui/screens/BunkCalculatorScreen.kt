@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.R
 import com.aditya.present.domain.BunkCalculator
-import com.aditya.present.ui.components.BunkCalculatorHelper
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.primaryGradient
 
@@ -263,11 +262,11 @@ fun BunkCalculatorScreen(
                         projectedTotal == 0 -> stringResource(R.string.bunk_no_classes)
                         projectedPct >= target -> stringResource(
                             R.string.bunk_safe_status,
-                            BunkCalculatorHelper.classesCanBunk(projectedAttended, projectedTotal, target),
+                            BunkCalculator.classesCanBunk(projectedAttended, projectedTotal, target),
                         )
                         else -> stringResource(
                             R.string.bunk_need_attend,
-                            BunkCalculatorHelper.classesToAttend(projectedAttended, projectedTotal, target),
+                            BunkCalculator.classesToAttend(projectedAttended, projectedTotal, target),
                         )
                     }
                     Text(

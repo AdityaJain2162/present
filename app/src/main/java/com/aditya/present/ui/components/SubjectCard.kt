@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.aditya.present.R
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.domain.BunkCalculator
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalCardStyle
 import com.aditya.present.ui.theme.LocalCompactMode
@@ -209,12 +210,12 @@ private fun SubjectCardContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (totalUnits > 0) {
-                val classesToSkip = BunkCalculatorHelper.classesCanBunk(
+                val classesToSkip = BunkCalculator.classesCanBunk(
                     attended = attendedUnits,
                     total = totalUnits,
                     target = subject.targetAttendancePercent / 100f,
                 )
-                val classesToAttend = BunkCalculatorHelper.classesToAttend(
+                val classesToAttend = BunkCalculator.classesToAttend(
                     attended = attendedUnits,
                     total = totalUnits,
                     target = subject.targetAttendancePercent / 100f,

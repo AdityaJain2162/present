@@ -319,7 +319,7 @@ fun CalendarScreen(
                             stringResource(R.string.calendar_attendance_pct, pct),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (pct >= 75) MaterialTheme.colorScheme.primary
+                            color = if (pct >= (uiState.activeSession?.targetAttendancePercent?.toInt() ?: 75)) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.error,
                         )
                     }

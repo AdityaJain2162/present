@@ -188,9 +188,30 @@ class TimetableViewModel @Inject constructor(
                 val allSlots = repository.getAllSlots()
                 val slot = allSlots.find { it.id == slotId }
                 val units = slot?.units ?: 1
-                lastMarkedId = repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, units = units, slotId = slotId)
+                // Use the selected day's date so marking works for past/future days too
+                val markDate = getDateForSelectedDay()
+                lastMarkedId = repository.upsertAttendance(subjectId, markDate, status, units = units, slotId = slotId)
             }
         }
+    }
+
+    private fun getDateForSelectedDay(): Long {
+        val today = java.util.Calendar.getInstance()
+        val todayDayOfWeek = today.get(java.util.Calendar.DAY_OF_WEEK)
+        val selectedDay = _selectedDay.value // 1-7 (Calendar.DAY_OF_WEEK)
+        if (selectedDay == todayDayOfWeek) {
+            return System.currentTimeMillis()
+        }
+        // Find the most recent occurrence of the selected day (within the past week)
+        val cal = java.util.Calendar.getInstance()
+        val diff = (todayDayOfWeek - selectedDay + 7) % 7
+        cal.add(java.util.Calendar.DAY_OF_YEAR, -diff)
+        // Set to noon to avoid edge cases at midnight
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 12)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
     }
 
     fun undoLastMarked() {

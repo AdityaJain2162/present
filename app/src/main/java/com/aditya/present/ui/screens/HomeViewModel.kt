@@ -303,7 +303,10 @@ class HomeViewModel @Inject constructor(
             val total = dayEntries.filter {
                 it.status == AttendanceStatus.PRESENT.name || it.status == AttendanceStatus.ABSENT.name
             }.sumOf { it.units }
-            trend.add(if (total > 0) attended.toFloat() / total else 0f)
+            // Skip days with no classes — don't drag the trend down with 0%
+            if (total > 0) {
+                trend.add(attended.toFloat() / total)
+            }
         }
         return trend
     }

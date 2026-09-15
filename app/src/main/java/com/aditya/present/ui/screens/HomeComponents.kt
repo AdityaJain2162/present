@@ -58,6 +58,7 @@ fun OverallAttendanceCard(
     sessionName: String,
     sessionStart: Long,
     sessionEnd: Long,
+    sessionTargetPercent: Float = 75f,
     overallAttended: Int,
     overallTotal: Int,
     monthlyAttended: Int,
@@ -75,10 +76,10 @@ fun OverallAttendanceCard(
         2 -> weeklyAttended to weeklyTotal
         else -> overallAttended to overallTotal
     }
-    val pct = if (total > 0) (attended * 100 / total) else 0
+    val pct = if (total > 0) (attended.toFloat() * 100 / total).toInt() else 0
     val hasData = total > 0
 
-    val targetPct = 75
+    val targetPct = sessionTargetPercent.toInt()
     val percentageColor = when {
         !hasData -> Color.White.copy(alpha = 0.6f)
         pct >= targetPct -> Color(0xFFB6F500)

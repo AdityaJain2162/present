@@ -70,7 +70,13 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setAutoMarkHour(hour: Int) {
-        viewModelScope.launch { themeRepository.setAutoMarkHour(hour) }
+        viewModelScope.launch {
+            themeRepository.setAutoMarkHour(hour)
+            // Reschedule the alarm if auto-mark is enabled
+            if (themePrefs.value.autoMarkEnabled) {
+                AlarmScheduler.scheduleAutoMark(appContext, hour)
+            }
+        }
     }
 
     fun setCardStyle(style: String) {
@@ -90,7 +96,50 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setClassNotificationsEnabled(enabled: Boolean) {
-        viewModelScope.launch { themeRepository.setClassNotificationsEnabled(enabled) }
+        viewModelScope.launch {
+            themeRepository.setClassNotificationsEnabled(enabled)
+            if (enabled) {
+                // Schedule reminders for all existing slots
+                val slots = presentRepository.getAllSlots()
+                val today = java.util.Calendar.getInstance()
+                for (slot in slots) {
+                    val subject = presentRepository.getSubjectById(slot.subjectId) ?: continue
+                    val todayDayOfWeek = today.get(java.util.Calendar.DAY_OF_WEEK)
+                    var daysUntil = (slot.dayOfWeek - todayDayOfWeek + 7) % 7
+                    if (daysUntil == 0) {
+                        val classTime = java.util.Calendar.getInstance().apply {
+                            set(java.util.Calendar.HOUR_OF_DAY, slot.startTimeMinutes / 60)
+                            set(java.util.Calendar.MINUTE, slot.startTimeMinutes % 60)
+                            set(java.util.Calendar.SECOND, 0)
+                            set(java.util.Calendar.MILLISECOND, 0)
+                        }
+                        if (classTime.timeInMillis <= System.currentTimeMillis()) {
+                            daysUntil = 7
+                        }
+                    }
+                    val nextDate = java.util.Calendar.getInstance().apply {
+                        add(java.util.Calendar.DAY_OF_YEAR, daysUntil)
+                        set(java.util.Calendar.HOUR_OF_DAY, 0)
+                        set(java.util.Calendar.MINUTE, 0)
+                        set(java.util.Calendar.SECOND, 0)
+                        set(java.util.Calendar.MILLISECOND, 0)
+                    }
+                    AlarmScheduler.scheduleClassReminder(
+                        context = appContext,
+                        slot = slot,
+                        subject = subject,
+                        dateMillis = nextDate.timeInMillis,
+                        leadMinutes = themePrefs.value.notificationLeadMinutes,
+                    )
+                }
+            } else {
+                // Cancel all existing class reminder alarms
+                val slots = presentRepository.getAllSlots()
+                for (slot in slots) {
+                    AlarmScheduler.cancelClassReminder(appContext, slot.id)
+                }
+            }
+        }
     }
 
     fun setNotificationLeadMinutes(minutes: Int) {
