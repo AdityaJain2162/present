@@ -70,6 +70,7 @@ fun OnboardingScreen(
     var endDate by remember {
         mutableStateOf(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 180)
     }
+    var targetAttendance by remember { mutableStateOf(75f) }
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
     val haptics = LocalHaptics.current
@@ -119,6 +120,12 @@ fun OnboardingScreen(
                         haptics.confirm()
                         sessionType = it
                         sessionName = if (it == SessionType.SEMESTER) defaultSemesterName else defaultYearName
+                        // Adjust default end date based on session type
+                        endDate = if (it == SessionType.SEMESTER) {
+                            System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 180
+                        } else {
+                            System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365
+                        }
                         step = 2
                     },
                     onBack = {
@@ -131,9 +138,11 @@ fun OnboardingScreen(
                     sessionName = sessionName,
                     startDate = startDate,
                     endDate = endDate,
+                    targetAttendance = targetAttendance,
                     onNameChange = { sessionName = it },
                     onStartDateChange = { startDate = it },
                     onEndDateChange = { endDate = it },
+                    onTargetChange = { targetAttendance = it },
                     onCreate = {
                         haptics.confirm()
                         onSessionCreated(
@@ -141,7 +150,7 @@ fun OnboardingScreen(
                             sessionName.ifBlank { defaultSessionName },
                             startDate,
                             endDate,
-                            75f,
+                            targetAttendance,
                         )
                     },
                     onBack = {

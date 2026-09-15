@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
 import com.aditya.present.domain.AttendanceStatus
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.LocalAccentPreset
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,11 +72,16 @@ fun StatsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(padding),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
             // Overview stats
             StatsCard(title = stringResource(R.string.stats_overview)) {
                 StatRow(stringResource(R.string.home_period_overall), "${uiState.overallAttended}/${uiState.overallTotal}",
@@ -90,7 +96,7 @@ fun StatsScreen(
             StatsCard(title = stringResource(R.string.stats_streaks)) {
                 StatRow(stringResource(R.string.stats_current_streak), stringResource(R.string.stats_days, uiState.currentStreak), "")
                 StatRow(stringResource(R.string.stats_best_streak), stringResource(R.string.stats_days, uiState.bestStreak), "")
-                StatRow(stringResource(R.string.stats_perfect_days), "${uiState.perfectDays}", "")
+                StatRow(stringResource(R.string.stats_perfect_days), stringResource(R.string.stats_days, uiState.perfectDays), "")
             }
 
             // Per-subject breakdown
@@ -144,6 +150,8 @@ fun StatsScreen(
                         .height(120.dp),
                 )
             }
+        }
+            BannerAd()
         }
     }
 }
@@ -211,7 +219,7 @@ private fun StatRow(label: String, value: String, percentage: String) {
 
 /**
  * Simple line chart showing attendance percentage over the last 14 days.
- * Each point is the cumulative attendance percentage up to that day.
+ * Each point is the per-day attendance percentage for that day.
  */
 @Composable
 private fun TrendChart(

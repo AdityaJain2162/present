@@ -80,10 +80,13 @@
     <string name="mark_as_absent">Mark as absent</string>
     <string name="mark_as_cancelled">Mark as cancelled</string>
     <string name="mark_as_on_duty">Mark as on duty</string>
+    <string name="mark_as_holiday">Mark as holiday</string>
+    <string name="mark_each_slot">Mark each class individually</string>
 
     <!-- Calendar -->
     <string name="calendar_previous_month">Previous month</string>
     <string name="calendar_next_month">Next month</string>
+    <string name="calendar_today">Today</string>
     <string name="calendar_month_summary">Month Summary</string>
     <string name="calendar_attendance_pct">Attendance: %1$d%%</string>
     <string name="calendar_no_session">No active session</string>
@@ -108,7 +111,7 @@
     <string name="timetable_until">until %1$s</string>
     <string name="timetable_select_subject">Select a subject</string>
     <string name="timetable_end_time">Ends at %1$s</string>
-    <string name="timetable_swipe_to_mark">Swipe right to mark Present, left for Absent</string>
+    <string name="timetable_swipe_to_mark">Swipe right → Present, left → Absent. Tap for all options. Long-press to delete.</string>
     <string name="timetable_select_day">Select %1$s</string>
     <string name="timetable_marked_status">%1$s at %2$s. Marked %3$s.</string>
     <string name="timetable_swipe_hint">%1$s at %2$s. Swipe right for present, left for absent.</string>

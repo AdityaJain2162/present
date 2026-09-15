@@ -39,6 +39,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -99,6 +101,7 @@ fun TimetableScreen(
     var selectedDay by remember { mutableStateOf(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1) }
     var showAddSlot by remember { mutableStateOf(false) }
     var lastMarked by remember { mutableStateOf<Pair<String, AttendanceStatus>?>(null) }
+    var statusPickerSlot by remember { mutableStateOf<Pair<SubjectEntity, Long>?>(null) }
 
     val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
@@ -282,6 +285,10 @@ fun TimetableScreen(
                                         viewModel.markAttendance(subject.id, timetableSlot.slot.id, status)
                                         lastMarked = subject.name to status
                                     },
+                                    onTap = {
+                                        haptics.tap()
+                                        statusPickerSlot = subject to timetableSlot.slot.id
+                                    },
                                     onDeleteSlot = {
                                         haptics.heavy()
                                         viewModel.deleteSlot(timetableSlot.slot.id)
@@ -308,6 +315,89 @@ fun TimetableScreen(
             },
         )
     }
+
+    // Status picker dialog (tap on card)
+    statusPickerSlot?.let { (subject, slotId) ->
+        AttendanceStatusPickerDialog(
+            subjectName = subject.name,
+            currentStatus = uiState.slotsForDay.find { it.slot.id == slotId }?.todayStatus,
+            onMark = { status ->
+                haptics.heavy()
+                viewModel.markAttendance(subject.id, slotId, status)
+                lastMarked = subject.name to status
+                statusPickerSlot = null
+            },
+            onDismiss = { statusPickerSlot = null },
+        )
+    }
+}
+
+@Composable
+private fun AttendanceStatusPickerDialog(
+    subjectName: String,
+    currentStatus: AttendanceStatus?,
+    onMark: (AttendanceStatus) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(subjectName, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                AttendanceStatus.entries.forEach { status ->
+                    val isSelected = currentStatus == status
+                    val labelRes = when (status) {
+                        AttendanceStatus.PRESENT -> R.string.status_present
+                        AttendanceStatus.ABSENT -> R.string.status_absent
+                        AttendanceStatus.CANCELLED -> R.string.status_cancelled
+                        AttendanceStatus.HOLIDAY -> R.string.status_holiday
+                        AttendanceStatus.ON_DUTY -> R.string.status_on_duty
+                    }
+                    val statusColor = when (status) {
+                        AttendanceStatus.PRESENT -> Color(0xFF4CAF50)
+                        AttendanceStatus.ABSENT -> Color(0xFFEF4444)
+                        AttendanceStatus.CANCELLED -> Color(0xFFFF9800)
+                        AttendanceStatus.HOLIDAY -> Color(0xFF9C27B0)
+                        AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) statusColor.copy(alpha = 0.15f) else Color.Transparent)
+                            .clickable { onMark(status) }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(CircleShape)
+                                .background(statusColor),
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(labelRes),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        )
+                        if (isSelected) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = null,
+                                tint = statusColor,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
@@ -319,6 +409,7 @@ private fun SwipeableTimetableCard(
     units: Int,
     todayStatus: AttendanceStatus?,
     onMark: (AttendanceStatus) -> Unit,
+    onTap: () -> Unit,
     onDeleteSlot: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -394,7 +485,7 @@ private fun SwipeableTimetableCard(
                 .clip(CardShape)
                 .combinedClickable(
                     onLongClick = { showDeleteConfirm = true },
-                    onClick = {},
+                    onClick = { onTap() },
                 )
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
@@ -498,7 +589,7 @@ private fun StatusPill(status: AttendanceStatus) {
         AttendanceStatus.PRESENT -> Color(0xFF4CAF50) to R.string.status_present
         AttendanceStatus.ABSENT -> Color(0xFFEF4444) to R.string.status_absent
         AttendanceStatus.CANCELLED -> Color(0xFFFF9800) to R.string.status_cancelled
-        AttendanceStatus.HOLIDAY -> Color(0xFF9E9E9E) to R.string.status_holiday
+        AttendanceStatus.HOLIDAY -> Color(0xFF9C27B0) to R.string.status_holiday
         AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary to R.string.status_on_duty
     }
     AssistChip(
@@ -632,7 +723,7 @@ private fun AddSlotDialog(
                         placeholder = { Text(stringResource(R.string.timetable_select_subject)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(),
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.ArrowDropDown,

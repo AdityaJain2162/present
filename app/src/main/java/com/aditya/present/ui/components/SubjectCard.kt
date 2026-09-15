@@ -277,7 +277,7 @@ private fun StatusBadge(status: AttendanceStatus) {
         AttendanceStatus.PRESENT -> Color(0xFF4CAF50) to Icons.Filled.Check
         AttendanceStatus.ABSENT -> Color(0xFFEF4444) to Icons.Filled.Close
         AttendanceStatus.CANCELLED -> Color(0xFFFF9800) to Icons.Filled.EventBusy
-        AttendanceStatus.HOLIDAY -> Color(0xFF9E9E9E) to Icons.Filled.EventBusy
+        AttendanceStatus.HOLIDAY -> Color(0xFF9C27B0) to Icons.Filled.EventBusy
         AttendanceStatus.ON_DUTY -> MaterialTheme.colorScheme.primary to Icons.Filled.Work
     }
     Box(

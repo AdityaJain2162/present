@@ -24,6 +24,7 @@ import javax.inject.Inject
 data class DayEntry(
     val attendance: AttendanceEntity,
     val subject: SubjectEntity?,
+    val slotStartTimeMinutes: Int? = null,
 )
 
 data class CalendarDayStatus(
@@ -144,10 +145,16 @@ class CalendarViewModel @Inject constructor(
                 emptyMap()
             }
             val sessionSubjectIds = subjects.keys
+            // Load all slots to find slot times for entries
+            val allSlots = repository.getAllSlots().associateBy { it.id }
             _selectedDayEntries.value = entries
                 .filter { it.subjectId in sessionSubjectIds }
                 .map { entry ->
-                    DayEntry(entry, subjects[entry.subjectId])
+                    DayEntry(
+                        attendance = entry,
+                        subject = subjects[entry.subjectId],
+                        slotStartTimeMinutes = entry.slotId?.let { allSlots[it]?.startTimeMinutes },
+                    )
                 }
             _loadedDay = day
         }

@@ -214,6 +214,31 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun markSingleSlot(subjectId: Long, slotId: Long, status: AttendanceStatus, subjectName: String) {
+        viewModelScope.launch {
+            markMutex.withLock {
+                val now = System.currentTimeMillis()
+                val allSlots = repository.getAllSlots()
+                val slot = allSlots.find { it.id == slotId }
+                val units = slot?.units ?: 1
+                val id = repository.upsertAttendance(
+                    subjectId = subjectId,
+                    date = now,
+                    status = status,
+                    units = units,
+                    slotId = slotId,
+                )
+                _lastMarkedIds.value = listOf(id)
+                _lastMarked.value = subjectName to status
+            }
+        }
+    }
+
+    suspend fun getTodaySlotsForSubject(subjectId: Long): List<com.aditya.present.data.ClassSlotEntity> {
+        val todayDayOfWeek = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK)
+        return repository.getSlotsForSubjectOnDay(subjectId, todayDayOfWeek)
+    }
+
     fun undoLastMarked() {
         val ids = _lastMarkedIds.value
         if (ids.isEmpty()) return

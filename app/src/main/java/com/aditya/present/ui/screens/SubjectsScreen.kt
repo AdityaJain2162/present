@@ -64,6 +64,7 @@ fun SubjectsScreen(
     val snackbarHost = remember { SnackbarHostState() }
 
     var markingSubject by remember { mutableStateOf<SubjectWithAttendance?>(null) }
+    var todaySlots by remember { mutableStateOf<List<com.aditya.present.data.ClassSlotEntity>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
     var filterMode by remember { mutableStateOf(SubjectFilter.ALL) }
 
@@ -203,6 +204,7 @@ fun SubjectsScreen(
                                 onClick = {
                                     haptics.tap()
                                     markingSubject = subjectWithAtt
+                                    todaySlots = emptyList()
                                 },
                                 onBunkCalculator = {
                                     haptics.tap()
@@ -229,14 +231,32 @@ fun SubjectsScreen(
         }
     }
 
+    // Load today's slots when a subject is tapped for marking
+    LaunchedEffect(markingSubject) {
+        markingSubject?.let { subject ->
+            todaySlots = viewModel.getTodaySlotsForSubject(subject.subject.id)
+        }
+    }
+
     // Attendance marking bottom sheet
     markingSubject?.let { subject ->
+        val slotInfos = todaySlots.map { slot ->
+            com.aditya.present.ui.components.SlotInfo(
+                slotId = slot.id,
+                timeText = String.format("%02d:%02d", slot.startTimeMinutes / 60, slot.startTimeMinutes % 60),
+            )
+        }
         com.aditya.present.ui.components.AttendanceMarkSheet(
             subjectName = subject.subject.name,
             subjectColor = subject.subject.color,
             teacherName = subject.subject.teacherName,
+            todaySlots = slotInfos,
             onMark = { status ->
                 viewModel.markAttendance(subject.subject.id, status, subject.subject.name)
+                markingSubject = null
+            },
+            onMarkSlot = { slotId, status ->
+                viewModel.markSingleSlot(subject.subject.id, slotId, status, subject.subject.name)
                 markingSubject = null
             },
             onDismiss = { markingSubject = null },

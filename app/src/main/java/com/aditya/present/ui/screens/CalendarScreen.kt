@@ -108,7 +108,17 @@ fun CalendarScreen(
                             )
                         }
                     }
-                }
+                },
+                actions = {
+                    if (displayedMonth != 0) {
+                        TextButton(onClick = {
+                            haptics.tap()
+                            viewModel.setMonthOffset(0)
+                        }) {
+                            Text(stringResource(R.string.calendar_today))
+                        }
+                    }
+                },
             )
         }
     ) { padding ->
@@ -439,6 +449,9 @@ private fun DayDetailSheet(
                 }.getOrNull()
                 val subjectName = entry.subject?.name ?: stringResource(R.string.calendar_unknown)
                 val subjectColor = entry.subject?.color ?: 0xFF9E9E9E.toInt()
+                val timeText = entry.slotStartTimeMinutes?.let {
+                    String.format("%02d:%02d", it / 60, it % 60)
+                }
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -459,14 +472,22 @@ private fun DayDetailSheet(
                                     .background(Color(subjectColor)),
                             )
                             Spacer(modifier = Modifier.size(12.dp))
-                            Text(
-                                text = subjectName,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f),
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = subjectName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                if (timeText != null) {
+                                    Text(
+                                        text = timeText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
                             IconButton(onClick = {
                                 haptics.tap()
                                 deleteTarget = entry.attendance.id

@@ -226,6 +226,34 @@ fun SettingsScreen(
                         viewModel.setHapticFeedback(it)
                     },
                 )
+                // Haptic intensity (only shown when haptics enabled)
+                if (prefs.hapticFeedback) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        stringResource(R.string.settings_haptic_intensity),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        stringResource(R.string.settings_haptic_intensity_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("Low" to "LOW", "Medium" to "MEDIUM", "High" to "HIGH").forEach { (label, value) ->
+                            FilterChip(
+                                selected = prefs.hapticIntensity == value,
+                                onClick = {
+                                    haptics.confirm()
+                                    viewModel.setHapticIntensity(value)
+                                },
+                                label = { Text(label) },
+                            )
+                        }
+                    }
+                }
             }
 
             // ── Attendance Defaults ──
@@ -454,60 +482,7 @@ fun SettingsScreen(
 
                     HorizontalDivider()
 
-                    // Haptic Feedback
-                    val haptics = LocalHaptics.current
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                stringResource(R.string.settings_haptic_feedback),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            Text(
-                                stringResource(R.string.settings_haptic_feedback_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Switch(
-                            checked = prefs.hapticFeedback,
-                            onCheckedChange = {
-                                if (it) haptics.confirm()
-                                viewModel.setHapticFeedback(it)
-                            },
-                        )
-                    }
-
-                    // Haptic intensity (only shown when haptics enabled)
-                    if (prefs.hapticFeedback) {
-                        HorizontalDivider()
-                        Column {
-                            Text(
-                                stringResource(R.string.settings_haptic_intensity),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            Text(
-                                stringResource(R.string.settings_haptic_intensity_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("Low" to "LOW", "Medium" to "MEDIUM", "High" to "HIGH").forEach { (label, value) ->
-                                    FilterChip(
-                                        selected = prefs.hapticIntensity == value,
-                                        onClick = {
-                                            haptics.confirm()
-                                            viewModel.setHapticIntensity(value)
-                                        },
-                                        label = { Text(label) },
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    // Haptic intensity moved to Behavior section
                 }
             }
 

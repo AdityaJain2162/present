@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.R
 import com.aditya.present.domain.BunkCalculator
+import com.aditya.present.ui.components.BannerAd
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.primaryGradient
 
@@ -93,11 +94,16 @@ fun BunkCalculatorScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(padding),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
             // Subject header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -280,6 +286,8 @@ fun BunkCalculatorScreen(
                     )
                 }
             }
+        }
+            BannerAd()
         }
     }
 }
