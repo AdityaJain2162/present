@@ -85,7 +85,7 @@ fun DashboardScreen(
                                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                 .clickable {
                                     haptics.tap()
-                                    if (uiState.allSessions.size > 1) menuExpanded = true
+                                    menuExpanded = true
                                 }
                                 .padding(horizontal = 14.dp, vertical = 8.dp),
                         ) {
@@ -109,15 +109,13 @@ fun DashboardScreen(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            if (uiState.allSessions.size > 1) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = stringResource(R.string.home_switch_session),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = stringResource(R.string.home_switch_session),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp),
+                            )
                         }
                         DropdownMenu(
                             expanded = menuExpanded,
