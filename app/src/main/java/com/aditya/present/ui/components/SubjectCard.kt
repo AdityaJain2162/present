@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -61,6 +62,7 @@ fun SubjectCard(
     modifier: Modifier = Modifier,
     todayStatus: AttendanceStatus? = null,
     onBunkCalculator: (() -> Unit)? = null,
+    onEdit: (() -> Unit)? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val targetPct = subject.targetAttendancePercent / 100f
@@ -85,20 +87,20 @@ fun SubjectCard(
             modifier = cardModifier,
             shape = CardShape,
             colors = cardColors,
-        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator) { expanded = !expanded } }
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator, onEdit) { expanded = !expanded } }
         "elevated" -> ElevatedCard(
             onClick = onClick,
             modifier = cardModifier,
             shape = CardShape,
             colors = cardColors,
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
-        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator) { expanded = !expanded } }
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator, onEdit) { expanded = !expanded } }
         else -> Card(
             onClick = onClick,
             modifier = cardModifier,
             shape = CardShape,
             colors = cardColors,
-        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator) { expanded = !expanded } }
+        ) { SubjectCardContent(subject, attendedUnits, totalUnits, percentage, isSafe, showPercentage, compact, cardPadding, progressHeight, expanded, todayStatus, onBunkCalculator, onEdit) { expanded = !expanded } }
     }
 }
 
@@ -116,6 +118,7 @@ private fun SubjectCardContent(
     expanded: Boolean,
     todayStatus: AttendanceStatus?,
     onBunkCalculator: (() -> Unit)?,
+    onEdit: (() -> Unit)?,
     onToggleExpand: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(cardPadding)) {
@@ -230,20 +233,34 @@ private fun SubjectCardContent(
                     )
                 }
             }
-            if (onBunkCalculator != null) {
+            if (onBunkCalculator != null || onEdit != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    androidx.compose.material3.TextButton(onClick = onBunkCalculator) {
-                        Icon(
-                            imageVector = Icons.Filled.Calculate,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Bunk Calculator")
+                    if (onEdit != null) {
+                        androidx.compose.material3.TextButton(onClick = onEdit) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Edit")
+                        }
+                    }
+                    if (onBunkCalculator != null) {
+                        androidx.compose.material3.TextButton(onClick = onBunkCalculator) {
+                            Icon(
+                                imageVector = Icons.Filled.Calculate,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Bunk Calculator")
+                        }
                     }
                 }
             }

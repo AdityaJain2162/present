@@ -432,7 +432,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun OverallAttendanceCard(
+fun OverallAttendanceCard(
     subjects: List<SubjectWithAttendance>,
     sessionName: String,
     sessionStart: Long,
@@ -555,7 +555,7 @@ private fun OverallAttendanceCard(
 }
 
 @Composable
-private fun StreakStatsRow(
+fun StreakStatsRow(
     currentStreak: Int,
     bestStreak: Int,
     perfectDays: Int,

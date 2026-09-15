@@ -194,7 +194,11 @@ fun CalendarScreen(
                                         val day = dayCounter
                                         val isToday = isCurrentMonth &&
                                             day == today.get(Calendar.DAY_OF_MONTH)
-                                        val dayStatus = uiState.attendanceByDay[day]
+                                        val dayEntries = uiState.attendanceByDay[day] ?: emptyList()
+                                        // Use the worst status for the day's background tint
+                                        val dayStatus = dayEntries.mapNotNull {
+                                            runCatching { AttendanceStatus.valueOf(it.status) }.getOrNull()
+                                        }.minByOrNull { it.ordinal }?.name
 
                                         Box(
                                             modifier = Modifier
@@ -217,20 +221,49 @@ fun CalendarScreen(
                                                 },
                                             contentAlignment = Alignment.Center,
                                         ) {
-                                            Text(
-                                                text = "$day",
-                                                fontSize = 14.sp,
-                                                fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                                                color = when (dayStatus) {
-                                                    "PRESENT" -> Color(0xFF2E7D32)
-                                                    "ABSENT" -> Color(0xFFC62828)
-                                                    "CANCELLED" -> Color(0xFFE65100)
-                                                    "ON_DUTY" -> MaterialTheme.colorScheme.primary
-                                                    "HOLIDAY" -> Color(0xFF7B1FA2)
-                                                    else -> if (isToday) MaterialTheme.colorScheme.primary
-                                                    else MaterialTheme.colorScheme.onSurface
-                                                },
-                                            )
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.Center,
+                                            ) {
+                                                Text(
+                                                    text = "$day",
+                                                    fontSize = 14.sp,
+                                                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                                                    color = when (dayStatus) {
+                                                        "PRESENT" -> Color(0xFF2E7D32)
+                                                        "ABSENT" -> Color(0xFFC62828)
+                                                        "CANCELLED" -> Color(0xFFE65100)
+                                                        "ON_DUTY" -> MaterialTheme.colorScheme.primary
+                                                        "HOLIDAY" -> Color(0xFF7B1FA2)
+                                                        else -> if (isToday) MaterialTheme.colorScheme.primary
+                                                        else MaterialTheme.colorScheme.onSurface
+                                                    },
+                                                )
+                                                // Show small colored dots for each subject's status
+                                                if (dayEntries.isNotEmpty()) {
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                                    ) {
+                                                        dayEntries.take(4).forEach { entry ->
+                                                            val dotColor = when (entry.status) {
+                                                                "PRESENT" -> Color(0xFF4CAF50)
+                                                                "ABSENT" -> Color(0xFFF44336)
+                                                                "CANCELLED" -> Color(0xFFFF9800)
+                                                                "ON_DUTY" -> MaterialTheme.colorScheme.primary
+                                                                "HOLIDAY" -> Color(0xFF9C27B0)
+                                                                else -> Color.Gray
+                                                            }
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .size(4.dp)
+                                                                    .clip(CircleShape)
+                                                                    .background(dotColor),
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                         dayCounter++
                                     }
@@ -258,11 +291,12 @@ fun CalendarScreen(
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        val present = uiState.attendanceByDay.values.count { it == "PRESENT" }
-                        val absent = uiState.attendanceByDay.values.count { it == "ABSENT" }
-                        val cancelled = uiState.attendanceByDay.values.count { it == "CANCELLED" }
-                        val onDuty = uiState.attendanceByDay.values.count { it == "ON_DUTY" }
-                        val holiday = uiState.attendanceByDay.values.count { it == "HOLIDAY" }
+                        val allEntries = uiState.attendanceByDay.values.flatten()
+                        val present = allEntries.count { it.status == "PRESENT" }
+                        val absent = allEntries.count { it.status == "ABSENT" }
+                        val cancelled = allEntries.count { it.status == "CANCELLED" }
+                        val onDuty = allEntries.count { it.status == "ON_DUTY" }
+                        val holiday = allEntries.count { it.status == "HOLIDAY" }
                         val total = present + absent
                         val pct = if (total > 0) (present * 100 / total) else 0
 

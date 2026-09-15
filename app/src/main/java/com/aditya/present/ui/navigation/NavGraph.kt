@@ -87,6 +87,9 @@ fun PresentNavHost(
                 onAddSubject = { sessionId ->
                     navController.navigate(Routes.addSubject(sessionId))
                 },
+                onEditSubject = { sessionId, subjectId ->
+                    navController.navigate(Routes.editSubject(sessionId, subjectId))
+                },
                 onAbout = {
                     navController.navigate(Routes.ABOUT)
                 },

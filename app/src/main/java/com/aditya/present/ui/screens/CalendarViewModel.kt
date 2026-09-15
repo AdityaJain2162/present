@@ -25,9 +25,14 @@ data class DayEntry(
     val subject: SubjectEntity?,
 )
 
+data class CalendarDayStatus(
+    val status: String,
+    val subjectColor: Int,
+)
+
 data class CalendarUiState(
     val activeSession: AcademicSessionEntity? = null,
-    val attendanceByDay: Map<Int, String> = emptyMap(),
+    val attendanceByDay: Map<Int, List<CalendarDayStatus>> = emptyMap(),
     val isLoading: Boolean = true,
 )
 
@@ -73,20 +78,18 @@ class CalendarViewModel @Inject constructor(
 
                     repository.getAttendanceForDate(startOfMonth, endOfMonth)
                         .map { entries ->
+                            val subjects = repository.getAllSubjects().associateBy { it.id }
                             val byDay = entries.groupBy { entry ->
                                 val entryCal = Calendar.getInstance().apply {
                                     timeInMillis = entry.date
                                 }
                                 entryCal.get(Calendar.DAY_OF_MONTH)
                             }.mapValues { (_, dayEntries) ->
-                                val statuses = dayEntries.map { it.status }
-                                when {
-                                    statuses.contains("ABSENT") -> "ABSENT"
-                                    statuses.contains("PRESENT") -> "PRESENT"
-                                    statuses.contains("ON_DUTY") -> "ON_DUTY"
-                                    statuses.contains("CANCELLED") -> "CANCELLED"
-                                    statuses.contains("HOLIDAY") -> "HOLIDAY"
-                                    else -> "PRESENT"
+                                dayEntries.map { entry ->
+                                    CalendarDayStatus(
+                                        status = entry.status,
+                                        subjectColor = subjects[entry.subjectId]?.color ?: 0xFF9E9E9E.toInt(),
+                                    )
                                 }
                             }
                             CalendarUiState(

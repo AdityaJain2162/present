@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     onAddSubject: (Long) -> Unit,
+    onEditSubject: (Long, Long) -> Unit = { _, _ -> },
     onAbout: () -> Unit = {},
     onSessions: () -> Unit = {},
     onStats: () -> Unit = {},
@@ -94,10 +95,14 @@ fun MainScreen(
                 beyondViewportPageCount = 0,
             ) { page ->
                 when (tabs[page]) {
-                    Tab.HOME -> HomeScreen(
+                    Tab.DASHBOARD -> DashboardScreen(
                         onAddSubject = onAddSubject,
-                        onSubjectClick = { },
                         onManageSessions = onSessions,
+                        onStats = onStats,
+                    )
+                    Tab.SUBJECTS -> SubjectsScreen(
+                        onAddSubject = onAddSubject,
+                        onEditSubject = onEditSubject,
                         onBunkCalculator = onBunkCalculator,
                     )
                     Tab.CALENDAR -> CalendarScreen()
