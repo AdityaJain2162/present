@@ -54,6 +54,7 @@ import com.aditya.present.domain.ThemeMode
 import com.aditya.present.ui.theme.AccentPresets
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
+import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.primaryGradient
 
 private val GITHUB_URL = "https://github.com/AdityaJain2162"
@@ -72,6 +73,7 @@ fun SettingsScreen(
 ) {
     val prefs by viewModel.themePrefs.collectAsState()
     val context = LocalContext.current
+    val haptics = LocalHaptics.current
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) }
@@ -96,7 +98,10 @@ fun SettingsScreen(
                         ) {
                             RadioButton(
                                 selected = prefs.mode == mode,
-                                onClick = { viewModel.setThemeMode(mode) },
+                                onClick = {
+                                    haptics.confirm()
+                                    viewModel.setThemeMode(mode)
+                                },
                             )
                             Text(
                                 text = mode.name.lowercase().replaceFirstChar { it.uppercase() },
@@ -287,6 +292,7 @@ fun SettingsScreen(
                     HorizontalDivider()
 
                     // Haptic Feedback
+                    val haptics = LocalHaptics.current
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),
@@ -304,8 +310,40 @@ fun SettingsScreen(
                         }
                         Switch(
                             checked = prefs.hapticFeedback,
-                            onCheckedChange = { viewModel.setHapticFeedback(it) },
+                            onCheckedChange = {
+                                if (it) haptics.confirm()
+                                viewModel.setHapticFeedback(it)
+                            },
                         )
+                    }
+
+                    // Haptic intensity (only shown when haptics enabled)
+                    if (prefs.hapticFeedback) {
+                        HorizontalDivider()
+                        Column {
+                            Text(
+                                "Haptic Intensity",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                            Text(
+                                "How strong the vibration feels",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf("Low" to "LOW", "Medium" to "MEDIUM", "High" to "HIGH").forEach { (label, value) ->
+                                    FilterChip(
+                                        selected = prefs.hapticIntensity == value,
+                                        onClick = {
+                                            haptics.confirm()
+                                            viewModel.setHapticIntensity(value)
+                                        },
+                                        label = { Text(label) },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -439,6 +477,7 @@ private fun AccentSwatch(
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
+    val haptics = LocalHaptics.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.animateContentSize(),
@@ -448,6 +487,10 @@ private fun AccentSwatch(
                 .size(56.dp)
                 .clip(CircleShape)
                 .background(primaryGradient(preset))
+                .clickable {
+                    haptics.tap()
+                    onClick()
+                }
                 .padding(3.dp),
             contentAlignment = Alignment.Center,
         ) {

@@ -9,11 +9,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import com.aditya.present.data.ThemeRepository
 import com.aditya.present.ui.navigation.PresentNavHost
+import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.PresentTheme
+import com.aditya.present.ui.theme.rememberHapticController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -47,7 +50,13 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = prefs.dynamicColor,
                 animationsEnabled = prefs.animationsEnabled,
             ) {
-                PresentNavHost()
+                val haptics = rememberHapticController(
+                    enabled = prefs.hapticFeedback,
+                    intensityName = prefs.hapticIntensity,
+                )
+                CompositionLocalProvider(LocalHaptics provides haptics) {
+                    PresentNavHost()
+                }
             }
         }
     }

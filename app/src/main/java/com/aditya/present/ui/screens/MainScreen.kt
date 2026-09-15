@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.ui.navigation.Tab
 import com.aditya.present.ui.theme.LocalAnimationsEnabled
+import com.aditya.present.ui.theme.LocalHaptics
 
 @Composable
 fun MainScreen(
@@ -145,6 +146,7 @@ private fun FluidSlidingNavBar(
             ) {
                 tabs.forEach { tab ->
                     val isSelected = selectedTab == tab
+                    val haptics = LocalHaptics.current
 
                     Column(
                         modifier = Modifier
@@ -153,7 +155,10 @@ private fun FluidSlidingNavBar(
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { onTabSelected(tab) },
+                                onClick = {
+                                    haptics.tap()
+                                    onTabSelected(tab)
+                                },
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,

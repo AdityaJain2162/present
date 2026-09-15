@@ -33,6 +33,7 @@ data class ThemePrefs(
     val cardStyle: String = "filled",
     val showPercentageOnCards: Boolean = true,
     val compactMode: Boolean = false,
+    val hapticIntensity: String = "MEDIUM", // LOW, MEDIUM, HIGH
 )
 
 @Singleton
@@ -50,6 +51,7 @@ class ThemeRepository @Inject constructor(
     private val cardStyleKey = stringPreferencesKey("card_style")
     private val showPctKey = booleanPreferencesKey("show_pct_on_cards")
     private val compactKey = booleanPreferencesKey("compact_mode")
+    private val hapticIntensityKey = stringPreferencesKey("haptic_intensity")
 
     val themePrefs: Flow<ThemePrefs> = context.dataStore.data.map { prefs ->
         ThemePrefs(
@@ -64,6 +66,7 @@ class ThemeRepository @Inject constructor(
             cardStyle = prefs[cardStyleKey] ?: "filled",
             showPercentageOnCards = prefs[showPctKey] ?: true,
             compactMode = prefs[compactKey] ?: false,
+            hapticIntensity = prefs[hapticIntensityKey] ?: "MEDIUM",
         )
     }
 
@@ -111,6 +114,10 @@ class ThemeRepository @Inject constructor(
 
     suspend fun setCompactMode(enabled: Boolean) {
         context.dataStore.edit { it[compactKey] = enabled }
+    }
+
+    suspend fun setHapticIntensity(intensity: String) {
+        context.dataStore.edit { it[hapticIntensityKey] = intensity }
     }
 }
 

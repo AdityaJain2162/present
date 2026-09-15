@@ -70,4 +70,8 @@ class SettingsViewModel @Inject constructor(
     fun setCompactMode(enabled: Boolean) {
         viewModelScope.launch { themeRepository.setCompactMode(enabled) }
     }
+
+    fun setHapticIntensity(intensity: String) {
+        viewModelScope.launch { themeRepository.setHapticIntensity(intensity) }
+    }
 }
