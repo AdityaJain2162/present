@@ -73,13 +73,18 @@ fun AboutScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .padding(padding),
         ) {
-            // ── Hero header with app icon + name ──
-            Card(
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                // ── Hero header with app icon + name ──
+                Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = CardShape,
                 colors = CardDefaults.cardColors(
@@ -192,8 +197,9 @@ fun AboutScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
 
-            // AdMob banner at the bottom of About
+            // AdMob banner pinned at the bottom — always visible
             BannerAd()
         }
     }

@@ -221,7 +221,7 @@ fun TimetableScreen(
                         icon = Icons.Filled.Add,
                         title = stringResource(R.string.timetable_no_subjects),
                         subtitle = stringResource(R.string.timetable_no_subjects_desc),
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 uiState.slotsForDay.isEmpty() -> {
@@ -229,14 +229,13 @@ fun TimetableScreen(
                         icon = Icons.Filled.Swipe,
                         title = stringResource(R.string.timetable_no_classes, dayNames[selectedDay]),
                         subtitle = stringResource(R.string.timetable_no_classes_desc),
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 else -> {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 80.dp),
                     ) {
                         items(uiState.slotsForDay, key = { it.slot.id }) { timetableSlot ->
                             timetableSlot.subject?.let { subject ->
@@ -258,15 +257,12 @@ fun TimetableScreen(
                                 )
                             }
                         }
-
-                        // AdMob banner at the bottom of Timetable
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            BannerAd()
-                        }
                     }
                 }
             }
+
+            // AdMob banner pinned at the bottom — always visible
+            BannerAd()
         }
     }
 

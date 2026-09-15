@@ -113,25 +113,25 @@ fun CalendarScreen(
             )
         }
     ) { padding ->
-        if (uiState.activeSession == null) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    stringResource(R.string.calendar_no_session),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-            ) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (uiState.activeSession == null) {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        stringResource(R.string.calendar_no_session),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
                 // Legend
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -283,9 +283,11 @@ fun CalendarScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                BannerAd()
+                }
             }
+
+            // AdMob banner pinned at the bottom — always visible
+            BannerAd()
         }
     }
 

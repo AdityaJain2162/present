@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -84,14 +85,19 @@ fun SettingsScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            // ── Appearance ──
-            SettingsCard(title = stringResource(R.string.settings_appearance)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                // ── Appearance ──
+                SettingsCard(title = stringResource(R.string.settings_appearance)) {
                 Column(modifier = Modifier.selectableGroup()) {
                     ThemeMode.entries.forEach { mode ->
                         Row(
@@ -464,8 +470,9 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
 
-            // AdMob banner at the bottom of Settings
+            // AdMob banner pinned at the bottom — always visible
             BannerAd()
         }
     }

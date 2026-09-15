@@ -211,21 +211,22 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            uiState.subjects.isEmpty() -> {
-                EmptyState(
+                uiState.subjects.isEmpty() -> {
+                    EmptyState(
                     icon = Icons.Filled.Add,
                     title = stringResource(R.string.home_welcome_title),
                     subtitle = stringResource(R.string.home_welcome_subtitle),
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier.weight(1f),
                     action = {
                         TextButton(
                             onClick = {
@@ -243,9 +244,9 @@ fun HomeScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier.weight(1f).padding(padding),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp
+                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -287,16 +288,14 @@ fun HomeScreen(
                         }
                     }
 
-                    // AdMob banner at the bottom of Home
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        BannerAd()
-                    }
                 }
             }
+            }
+
+            // AdMob banner pinned at the bottom — always visible
+            BannerAd()
         }
     }
-
     // Attendance marking bottom sheet
     markingSubject?.let { subject ->
         AttendanceMarkSheet(

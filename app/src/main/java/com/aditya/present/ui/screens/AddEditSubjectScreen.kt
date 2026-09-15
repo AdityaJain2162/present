@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -86,15 +87,20 @@ fun AddEditSubjectScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            // Gradient hero header showing the selected color
-            Box(
+            Column(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                // Gradient hero header showing the selected color
+                Box(
+                    modifier = Modifier
                     .fillMaxWidth()
                     .clip(CardShape)
                     .background(
@@ -205,8 +211,9 @@ fun AddEditSubjectScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+            }
 
-            // AdMob banner at the bottom of Add/Edit Subject
+            // AdMob banner pinned at the bottom — always visible
             BannerAd()
         }
     }

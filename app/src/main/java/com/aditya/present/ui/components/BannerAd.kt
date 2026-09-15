@@ -28,13 +28,18 @@ fun BannerAd(modifier: Modifier = Modifier) {
         }
     }
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
+    ) {
         AndroidView(
-            factory = { adView },
-            modifier = Modifier.fillMaxWidth(),
-            update = { view ->
-                view.loadAd(AdRequest.Builder().build())
+            factory = {
+                adView.apply {
+                    loadAd(AdRequest.Builder().build())
+                }
             },
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
