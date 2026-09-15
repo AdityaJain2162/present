@@ -81,7 +81,7 @@ fun MainScreen(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize().padding(padding),
-            beyondViewportPageCount = 1,
+            beyondViewportPageCount = 0,
         ) { page ->
             when (tabs[page]) {
                 Tab.HOME -> HomeScreen(
