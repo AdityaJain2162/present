@@ -72,7 +72,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onAddSubject: () -> Unit,
+    onAddSubject: (Long) -> Unit,
     onSubjectClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -103,7 +103,7 @@ fun HomeScreen(
                 withDismissAction = true,
             )
             if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
-                // TODO: implement undo (delete last entry)
+                viewModel.undoLastMarked()
             }
             viewModel.clearLastMarked()
         }
@@ -169,7 +169,7 @@ fun HomeScreen(
             ExtendedFloatingActionButton(
                 onClick = {
                     haptics.tap()
-                    onAddSubject()
+                    uiState.activeSession?.let { onAddSubject(it.id) }
                 },
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text(stringResource(R.string.add_subject)) },
@@ -196,7 +196,7 @@ fun HomeScreen(
                         TextButton(
                             onClick = {
                                 haptics.tap()
-                                onAddSubject()
+                                uiState.activeSession?.let { onAddSubject(it.id) }
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {

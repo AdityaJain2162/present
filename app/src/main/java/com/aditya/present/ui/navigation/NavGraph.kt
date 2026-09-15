@@ -1,8 +1,13 @@
 package com.aditya.present.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -34,7 +39,18 @@ fun PresentNavHost(
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val hasSession by onboardingViewModel.hasActiveSession.collectAsState()
 
-    val startDestination = if (hasSession) Routes.MAIN else Routes.ONBOARDING
+    // Show loading until we know whether a session exists
+    if (hasSession == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val startDestination = if (hasSession == true) Routes.MAIN else Routes.ONBOARDING
 
     NavHost(
         navController = navController,
@@ -54,8 +70,8 @@ fun PresentNavHost(
 
         composable(Routes.MAIN) {
             MainScreen(
-                onAddSubject = {
-                    navController.navigate(Routes.addSubject(1L))
+                onAddSubject = { sessionId ->
+                    navController.navigate(Routes.addSubject(sessionId))
                 },
                 onAbout = {
                     navController.navigate(Routes.ABOUT)

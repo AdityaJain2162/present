@@ -17,12 +17,12 @@ class OnboardingViewModel @Inject constructor(
     private val repository: PresentRepository,
 ) : ViewModel() {
 
-    val hasActiveSession: StateFlow<Boolean> = repository.getActiveSession()
+    val hasActiveSession: StateFlow<Boolean?> = repository.getActiveSession()
         .map { it != null }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = true, // assume true to prevent flashing onboarding
+            initialValue = null, // null = loading, true = has session, false = needs onboarding
         )
 
     fun createSession(

@@ -222,7 +222,7 @@ fun TimetableScreen(
                                     todayStatus = timetableSlot.todayStatus,
                                     onMark = { status ->
                                         haptics.heavy()
-                                        viewModel.markAttendance(subject.id, status, subject.name)
+                                        viewModel.markAttendance(subject.id, status)
                                         lastMarked = subject.name to status
                                     },
                                 )

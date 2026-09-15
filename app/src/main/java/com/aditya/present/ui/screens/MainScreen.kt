@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    onAddSubject: () -> Unit,
+    onAddSubject: (Long) -> Unit,
     onAbout: () -> Unit = {},
 ) {
     val tabs = Tab.entries

@@ -8,8 +8,11 @@ import com.aditya.present.data.PresentRepository
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -35,7 +38,11 @@ class TimetableViewModel @Inject constructor(
     private val repository: PresentRepository,
 ) : ViewModel() {
 
-    private var selectedDayOfWeek = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK) - 1
+    // MutableStateFlow so day changes trigger Flow re-collection
+    private val _selectedDay = MutableStateFlow(
+        java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK)
+    )
+    val selectedDay: StateFlow<Int> = _selectedDay.asStateFlow()
 
     @Suppress("OPT_IN_USAGE")
     val uiState: StateFlow<TimetableUiState> = repository.getActiveSession()
@@ -44,49 +51,50 @@ class TimetableViewModel @Inject constructor(
                 flowOf(TimetableUiState(isLoading = false))
             } else {
                 repository.getSubjectsForSession(session.id).flatMapLatest { subjects ->
-                    repository.getSlotsForDay(selectedDayOfWeek + 1).flatMapLatest { slots ->
-                        val startOfToday = getStartOfToday()
-                        val endOfToday = getEndOfToday()
+                    _selectedDay.flatMapLatest { dayOfWeek ->
+                        repository.getSlotsForDay(dayOfWeek).flatMapLatest { slots ->
+                            val startOfToday = getStartOfToday()
+                            val endOfToday = getEndOfToday()
 
-                        if (slots.isEmpty()) {
-                            flowOf(
-                                TimetableUiState(
-                                    activeSession = session,
-                                    subjects = subjects,
-                                    slotsForDay = emptyList(),
-                                    isLoading = false,
+                            if (slots.isEmpty()) {
+                                flowOf(
+                                    TimetableUiState(
+                                        activeSession = session,
+                                        subjects = subjects,
+                                        slotsForDay = emptyList(),
+                                        isLoading = false,
+                                    )
                                 )
-                            )
-                        } else {
-                            // Get attendance for today for each subject
-                            val slotFlows = slots.map { slot ->
-                                val subject = subjects.find { it.id == slot.subjectId }
-                                if (subject == null) {
-                                    flowOf(TimetableSlot(slot, null, null))
-                                } else {
-                                    repository.getAttendanceForSubject(subject.id).map { entries ->
-                                        val todayEntry = entries.find {
-                                            it.date in startOfToday..endOfToday
+                            } else {
+                                val slotFlows = slots.map { slot ->
+                                    val subject = subjects.find { it.id == slot.subjectId }
+                                    if (subject == null) {
+                                        flowOf(TimetableSlot(slot, null, null))
+                                    } else {
+                                        repository.getAttendanceForSubject(subject.id).map { entries ->
+                                            val todayEntry = entries.find {
+                                                it.date in startOfToday..endOfToday
+                                            }
+                                            TimetableSlot(
+                                                slot = slot,
+                                                subject = subject,
+                                                todayStatus = todayEntry?.let {
+                                                    runCatching {
+                                                        AttendanceStatus.valueOf(it.status)
+                                                    }.getOrNull()
+                                                },
+                                            )
                                         }
-                                        TimetableSlot(
-                                            slot = slot,
-                                            subject = subject,
-                                            todayStatus = todayEntry?.let {
-                                                runCatching {
-                                                    AttendanceStatus.valueOf(it.status)
-                                                }.getOrNull()
-                                            },
-                                        )
                                     }
                                 }
-                            }
-                            kotlinx.coroutines.flow.combine(slotFlows) { array ->
-                                TimetableUiState(
-                                    activeSession = session,
-                                    subjects = subjects,
-                                    slotsForDay = array.toList().sortedBy { it.slot.startTimeMinutes },
-                                    isLoading = false,
-                                )
+                                combine(slotFlows) { array ->
+                                    TimetableUiState(
+                                        activeSession = session,
+                                        subjects = subjects,
+                                        slotsForDay = array.toList().sortedBy { it.slot.startTimeMinutes },
+                                        isLoading = false,
+                                    )
+                                }
                             }
                         }
                     }
@@ -100,8 +108,8 @@ class TimetableViewModel @Inject constructor(
         )
 
     fun setDay(dayOfWeek: Int) {
-        selectedDayOfWeek = dayOfWeek
-        // Trigger refresh by re-collecting
+        // Calendar.DAY_OF_WEEK is 1-7 (1=Sunday), UI uses 0-6, so add 1
+        _selectedDay.value = dayOfWeek + 1
     }
 
     fun addSlot(subjectId: Long, dayOfWeek: Int, startTimeMinutes: Int, units: Int) {
@@ -110,9 +118,9 @@ class TimetableViewModel @Inject constructor(
         }
     }
 
-    fun markAttendance(subjectId: Long, status: AttendanceStatus, subjectName: String) {
+    fun markAttendance(subjectId: Long, status: AttendanceStatus) {
         viewModelScope.launch {
-            repository.insertAttendance(subjectId, System.currentTimeMillis(), status)
+            repository.upsertAttendance(subjectId, System.currentTimeMillis(), status)
         }
     }
 
