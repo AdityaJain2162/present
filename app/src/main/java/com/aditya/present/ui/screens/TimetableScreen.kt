@@ -37,10 +37,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -567,14 +569,22 @@ private fun AddSlotDialog(
                 )
 
                 // Subject dropdown
-                Box {
+                ExposedDropdownMenuBox(
+                    expanded = subjectMenuExpanded,
+                    onExpandedChange = {
+                        haptics.tap()
+                        subjectMenuExpanded = it
+                    },
+                ) {
                     OutlinedTextField(
                         value = selectedSubject?.name ?: "",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text(stringResource(R.string.timetable_subject)) },
                         placeholder = { Text(stringResource(R.string.timetable_select_subject)) },
-                        modifier = Modifier.fillMaxWidth().clickable { subjectMenuExpanded = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.ArrowDropDown,
@@ -616,24 +626,45 @@ private fun AddSlotDialog(
                 }
 
                 // Time picker button with end time preview
-                OutlinedTextField(
-                    value = String.format("%02d:%02d", selectedHour, selectedMinute),
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.timetable_start_time)) },
-                    modifier = Modifier.fillMaxWidth().clickable {
+                OutlinedButton(
+                    onClick = {
                         haptics.tap()
                         showTimePicker = true
                     },
-                    trailingIcon = {
-                        Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(20.dp))
-                    },
-                )
-                Text(
-                    text = stringResource(R.string.timetable_end_time, endTimeText),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Filled.Schedule,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.timetable_start_time),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = String.format("%02d:%02d", selectedHour, selectedMinute),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = stringResource(R.string.timetable_end_time, endTimeText),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
 
                 // Duration selector
                 Text(
