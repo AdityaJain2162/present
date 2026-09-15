@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,9 +80,19 @@ fun SettingsScreen(
     val prefs by viewModel.themePrefs.collectAsState()
     val context = LocalContext.current
     val haptics = LocalHaptics.current
+    val exportMessage by viewModel.exportMessage.collectAsState()
+    val snackbarHost = remember { androidx.compose.material3.SnackbarHostState() }
+
+    androidx.compose.runtime.LaunchedEffect(exportMessage) {
+        exportMessage?.let { msg ->
+            snackbarHost.showSnackbar(msg)
+            viewModel.clearExportMessage()
+        }
+    }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) }
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) },
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHost) },
     ) { padding ->
         Column(
             modifier = Modifier

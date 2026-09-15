@@ -133,10 +133,9 @@ fun StatsScreen(
             }
 
             // Attendance trend chart (last 14 days)
-            val trendData = computeTrendData(uiState.subjects.flatMap { listOf(it) })
             StatsCard(title = "14-Day Attendance Trend") {
                 TrendChart(
-                    data = trendData,
+                    data = uiState.trendData,
                     color = accentPreset.gradientStart,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -296,14 +295,4 @@ private fun TrendChart(
             )
         }
     }
-}
-
-/**
- * Compute a simple trend: for each of the last 14 days, calculate the
- * cumulative attendance percentage up to and including that day.
- */
-private fun computeTrendData(subjects: List<SubjectWithAttendance>): List<Float> {
-    // This is a simplified placeholder — returns empty for now
-    // A full implementation would query attendance by day from the DAO
-    return emptyList()
 }

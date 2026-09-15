@@ -48,6 +48,7 @@ data class HomeUiState(
     val currentStreak: Int = 0,
     val bestStreak: Int = 0,
     val perfectDays: Int = 0,
+    val trendData: List<Float> = emptyList(),
 )
 
 @HiltViewModel
@@ -145,6 +146,7 @@ class HomeViewModel @Inject constructor(
                                 }
 
                                 val streakStats = StreakCalculator.calculate(allEntries)
+                                val trendData = computeTrendData(allEntries)
 
                                 HomeUiState(
                                     activeSession = session,
@@ -162,6 +164,7 @@ class HomeViewModel @Inject constructor(
                                     currentStreak = streakStats.currentStreak,
                                     bestStreak = streakStats.bestStreak,
                                     perfectDays = streakStats.perfectDays,
+                                    trendData = trendData,
                                 )
                             }
                         }
@@ -272,5 +275,31 @@ class HomeViewModel @Inject constructor(
         cal.set(java.util.Calendar.SECOND, 0)
         cal.set(java.util.Calendar.MILLISECOND, 0)
         return cal.timeInMillis
+    }
+
+    private fun computeTrendData(entries: List<AttendanceEntity>): List<Float> {
+        if (entries.isEmpty()) return emptyList()
+
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
+        val today = cal.timeInMillis
+
+        val dayMs = 24 * 60 * 60 * 1000L
+        val trend = mutableListOf<Float>()
+
+        for (i in 13 downTo 0) {
+            val dayStart = today - i * dayMs
+            val dayEnd = dayStart + dayMs - 1
+            val dayEntries = entries.filter { it.date in dayStart..dayEnd }
+            val attended = dayEntries.count { it.status == AttendanceStatus.PRESENT.name }
+            val total = dayEntries.count {
+                it.status == AttendanceStatus.PRESENT.name || it.status == AttendanceStatus.ABSENT.name
+            }
+            trend.add(if (total > 0) attended.toFloat() / total else 0f)
+        }
+        return trend
     }
 }
