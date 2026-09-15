@@ -185,7 +185,7 @@ private fun SubjectCardContent(
                     Icon(
                         imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
                         else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        contentDescription = if (expanded) stringResource(R.string.subject_card_collapse) else stringResource(R.string.subject_card_expand),
                     )
                 }
             }

@@ -162,7 +162,7 @@ fun SubjectsScreen(
                                         haptics.tap()
                                         filterMode = filter
                                     },
-                                    label = { Text(filter.label) },
+                                    label = { Text(stringResource(filter.labelRes)) },
                                 )
                             }
                         }

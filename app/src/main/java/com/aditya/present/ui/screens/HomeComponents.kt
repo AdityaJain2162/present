@@ -45,11 +45,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-enum class SubjectFilter(val label: String) {
-    ALL("All"),
-    BELOW_TARGET("Below Target"),
-    MARKED_TODAY("Marked Today"),
-    UNMARKED("Unmarked"),
+enum class SubjectFilter(val labelRes: Int) {
+    ALL(R.string.subject_filter_all),
+    BELOW_TARGET(R.string.subject_filter_below_target),
+    MARKED_TODAY(R.string.subject_filter_marked_today),
+    UNMARKED(R.string.subject_filter_unmarked),
 }
 
 @Composable

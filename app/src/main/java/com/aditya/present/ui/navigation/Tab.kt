@@ -12,16 +12,17 @@ import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.aditya.present.R
 
 enum class Tab(
     val route: String,
-    val label: String,
+    val labelRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
 ) {
-    DASHBOARD("tab_dashboard", "Dashboard", Icons.Filled.Dashboard, Icons.Outlined.Dashboard),
-    SUBJECTS("tab_subjects", "Subjects", Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook),
-    CALENDAR("tab_calendar", "Calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth),
-    TIMETABLE("tab_timetable", "Timetable", Icons.Filled.TableChart, Icons.Outlined.TableChart),
-    SETTINGS("tab_settings", "Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
+    DASHBOARD("tab_dashboard", R.string.tab_label_dashboard, Icons.Filled.Dashboard, Icons.Outlined.Dashboard),
+    SUBJECTS("tab_subjects", R.string.tab_label_subjects, Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook),
+    CALENDAR("tab_calendar", R.string.tab_label_calendar, Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth),
+    TIMETABLE("tab_timetable", R.string.tab_label_timetable, Icons.Filled.TableChart, Icons.Outlined.TableChart),
+    SETTINGS("tab_settings", R.string.tab_label_settings, Icons.Filled.Settings, Icons.Outlined.Settings),
 }

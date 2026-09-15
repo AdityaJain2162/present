@@ -1,7 +1,5 @@
 package com.aditya.present.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
@@ -26,8 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,10 +59,6 @@ import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.primaryGradient
-
-private val GITHUB_URL = "https://github.com/AdityaJain2162"
-private val LINKEDIN_URL = "https://www.linkedin.com/in/adityajain2162/"
-private val REPO_URL = "https://github.com/AdityaJain2162/present"
 
 private val ALL_DAYS = listOf(
     "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"
@@ -242,7 +234,11 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("Low" to "LOW", "Medium" to "MEDIUM", "High" to "HIGH").forEach { (label, value) ->
+                        listOf(
+                            stringResource(R.string.settings_haptic_low) to "LOW",
+                            stringResource(R.string.settings_haptic_medium) to "MEDIUM",
+                            stringResource(R.string.settings_haptic_high) to "HIGH",
+                        ).forEach { (label, value) ->
                             FilterChip(
                                 selected = prefs.hapticIntensity == value,
                                 onClick = {
@@ -413,7 +409,11 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("Filled" to "filled", "Outlined" to "outlined", "Elevated" to "elevated").forEach { (label, value) ->
+                            listOf(
+                                stringResource(R.string.settings_card_style_filled) to "filled",
+                                stringResource(R.string.settings_card_style_outlined) to "outlined",
+                                stringResource(R.string.settings_card_style_elevated) to "elevated",
+                            ).forEach { (label, value) ->
                                 FilterChip(
                                     selected = prefs.cardStyle == value,
                                     onClick = {
@@ -583,7 +583,7 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Present — Every class counts.",
+                            stringResource(R.string.settings_about_tagline),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                         )
@@ -663,55 +663,6 @@ private fun ToggleRow(
 }
 
 @Composable
-private fun LinkRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(CardShape)
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(20.dp),
-            )
-        }
-        Spacer(modifier = Modifier.size(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                label,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-@Composable
 private fun AccentSwatch(
     preset: com.aditya.present.ui.theme.AccentPreset,
     isSelected: Boolean,
@@ -751,8 +702,4 @@ private fun AccentSwatch(
             else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-private fun android.content.Context.openUrl(url: String) {
-    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }

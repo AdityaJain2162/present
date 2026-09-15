@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -139,6 +141,7 @@ fun CalendarScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             ) {
                 // Legend
@@ -147,7 +150,7 @@ fun CalendarScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     LegendDot(Color(0xFF4CAF50), stringResource(R.string.status_present))
-                    LegendDot(Color(0xFFF44336), stringResource(R.string.status_absent))
+                    LegendDot(Color(0xFFEF4444), stringResource(R.string.status_absent))
                     LegendDot(Color(0xFFFF9800), stringResource(R.string.status_cancelled))
                     LegendDot(MaterialTheme.colorScheme.primary, stringResource(R.string.status_on_duty))
                     LegendDot(Color(0xFF9C27B0), stringResource(R.string.status_holiday))
@@ -227,7 +230,7 @@ fun CalendarScreen(
                                                 .background(
                                                     when (dayStatus) {
                                                         "PRESENT" -> Color(0xFF4CAF50).copy(alpha = 0.15f)
-                                                        "ABSENT" -> Color(0xFFF44336).copy(alpha = 0.15f)
+                                                        "ABSENT" -> Color(0xFFEF4444).copy(alpha = 0.15f)
                                                         "CANCELLED" -> Color(0xFFFF9800).copy(alpha = 0.15f)
                                                         "ON_DUTY" -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                                                         "HOLIDAY" -> Color(0xFF9C27B0).copy(alpha = 0.15f)
@@ -267,7 +270,7 @@ fun CalendarScreen(
                                                         dayEntries.take(4).forEach { entry ->
                                                             val dotColor = when (entry.status) {
                                                                 "PRESENT" -> Color(0xFF4CAF50)
-                                                                "ABSENT" -> Color(0xFFF44336)
+                                                                "ABSENT" -> Color(0xFFEF4444)
                                                                 "CANCELLED" -> Color(0xFFFF9800)
                                                                 "ON_DUTY" -> MaterialTheme.colorScheme.primary
                                                                 "HOLIDAY" -> Color(0xFF9C27B0)
@@ -320,7 +323,7 @@ fun CalendarScreen(
                         val pct = if (total > 0) (present.toFloat() * 100 / total).toInt() else 0
 
                         SummaryRow(stringResource(R.string.status_present), present, Color(0xFF4CAF50))
-                        SummaryRow(stringResource(R.string.status_absent), absent, Color(0xFFF44336))
+                        SummaryRow(stringResource(R.string.status_absent), absent, Color(0xFFEF4444))
                         SummaryRow(stringResource(R.string.status_cancelled), cancelled, Color(0xFFFF9800))
                         SummaryRow(stringResource(R.string.status_on_duty), onDuty, MaterialTheme.colorScheme.primary)
                         SummaryRow(stringResource(R.string.status_holiday), holiday, Color(0xFF9C27B0))

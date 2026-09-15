@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -205,14 +206,14 @@ private fun FloatingNavBar(
                         Spacer(modifier = Modifier.height(14.dp))
                         Icon(
                             imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
-                            contentDescription = tab.label,
+                            contentDescription = stringResource(tab.labelRes),
                             modifier = Modifier.size(22.dp),
                             tint = if (isSelected) MaterialTheme.colorScheme.onPrimary
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = tab.label,
+                            text = stringResource(tab.labelRes),
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.SemiBold
                             else FontWeight.Normal,

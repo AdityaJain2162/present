@@ -50,7 +50,6 @@
 
     <!-- Onboarding -->
     <string name="onboarding_tagline">Every class counts.</string>
-    <string name="onboarding_description">Track attendance, calculate safe bunks, manage your timetable, and never miss a deadline — all offline, no account needed.</string>
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_track_question">How do you track attendance?</string>
     <string name="onboarding_college_title">College / Semester</string>
@@ -63,7 +62,6 @@
     <string name="onboarding_year_name">Year name</string>
     <string name="onboarding_start_date">Start: %1$s</string>
     <string name="onboarding_end_date">End: %1$s</string>
-    <string name="onboarding_target_hint">Target attendance: 75%%\n(You can change these later in Settings)</string>
     <string name="onboarding_target_label">Target attendance: %1$d%%</string>
     <string name="onboarding_create_semester">Create Semester</string>
     <string name="onboarding_create_year">Create Year</string>
@@ -100,11 +98,9 @@
     <string name="timetable_no_classes">No classes on %1$s</string>
     <string name="timetable_no_classes_desc">Tap \"Add Slot\" to schedule a recurring weekly class for this day.</string>
     <string name="timetable_add_class_slot">Add Recurring Class</string>
-    <string name="timetable_day_label">Every %1$s</string>
     <string name="timetable_repeats_weekly">Repeats weekly for the entire semester</string>
     <string name="timetable_select_days">Days</string>
     <string name="timetable_subject">Subject</string>
-    <string name="timetable_select">Select</string>
     <string name="timetable_start_time">Start time</string>
     <string name="timetable_duration">Duration: %1$d hour(s)</string>
     <string name="timetable_add">Add</string>
@@ -152,11 +148,8 @@
 
     <!-- Add Slot Dialog (enhanced) -->
     <string name="timetable_custom_duration">Custom duration</string>
-    <string name="timetable_duration_minutes">%1$d min</string>
     <string name="timetable_custom_hours">Duration in hours</string>
     <string name="timetable_custom_hours_hint">e.g. 4</string>
-    <string name="timetable_select_time">Select Time</string>
-    <string name="timetable_pick_time">Pick Time</string>
 
     <!-- Home -->
     <string name="home_no_session">No session</string>
@@ -165,7 +158,6 @@
     <string name="home_welcome_title">Welcome to Present!</string>
     <string name="home_welcome_subtitle">Add your first subject to start tracking attendance and never worry about falling below your target again.</string>
     <string name="home_add_first_subject">Add Your First Subject</string>
-    <string name="home_add_subject_cd">Add subject</string>
     <string name="home_add_subject">Add Subject</string>
     <string name="settings_statistics">Statistics</string>
     <string name="settings_view_stats">View attendance statistics</string>
@@ -178,7 +170,6 @@
     <string name="subject_bunk_calculator">Bunk Calculator</string>
     <string name="subject_can_skip">Can safely skip %1$d more classes</string>
     <string name="subject_need_to_attend">Need to attend %1$d more classes</string>
-    <string name="subject_attendance_locked">Attendance locked</string>
     <string name="home_period_overall">Overall</string>
     <string name="home_period_monthly">Monthly</string>
     <string name="home_period_weekly">Weekly</string>
@@ -189,13 +180,18 @@
     <string name="home_subject_count">%1$d subject • Tap a subject to mark attendance</string>
     <string name="home_subject_count_plural">%1$d subjects • Tap a subject to mark attendance</string>
     <string name="home_undo">UNDO</string>
+    <string name="subject_filter_all">All</string>
+    <string name="subject_filter_below_target">Below Target</string>
+    <string name="subject_filter_marked_today">Marked Today</string>
+    <string name="subject_filter_unmarked">Unmarked</string>
+    <string name="tab_label_dashboard">Dashboard</string>
+    <string name="tab_label_subjects">Subjects</string>
+    <string name="tab_label_calendar">Calendar</string>
+    <string name="tab_label_timetable">Timetable</string>
+    <string name="tab_label_settings">Settings</string>
     <string name="home_marked_status">%1$s marked %2$s</string>
 
     <!-- Subject Card -->
-    <string name="subject_card_target">Target: %1$d%%</string>
-    <string name="subject_card_attended">Attended: %1$d / %2$d classes</string>
-    <string name="subject_card_can_skip">Can safely skip %1$d more classes</string>
-    <string name="subject_card_must_attend">Attend next %1$d classes to reach target</string>
     <string name="subject_card_collapse">Collapse</string>
     <string name="subject_card_expand">Expand</string>
 
@@ -217,6 +213,13 @@
     <string name="settings_weekend_desc">These days are auto-excluded from attendance</string>
     <string name="settings_haptic_intensity">Haptic Intensity</string>
     <string name="settings_haptic_intensity_desc">How strong the vibration feels</string>
+    <string name="settings_haptic_low">Low</string>
+    <string name="settings_haptic_medium">Medium</string>
+    <string name="settings_haptic_high">High</string>
+    <string name="settings_card_style_filled">Filled</string>
+    <string name="settings_card_style_outlined">Outlined</string>
+    <string name="settings_card_style_elevated">Elevated</string>
+    <string name="settings_about_tagline">Present — Every class counts.</string>
     <string name="settings_about_desc_full">Developer info, links, privacy, license</string>
 
     <!-- Notifications -->
