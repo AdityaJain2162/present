@@ -139,7 +139,10 @@ fun SettingsScreen(
                     }
                     Switch(
                         checked = prefs.dynamicColor,
-                        onCheckedChange = { viewModel.setDynamicColor(it) },
+                        onCheckedChange = {
+                            haptics.confirm()
+                            viewModel.setDynamicColor(it)
+                        },
                     )
                 }
             }
@@ -150,14 +153,20 @@ fun SettingsScreen(
                     title = "Smooth animations",
                     subtitle = "Transitions, spring motion, staggered lists",
                     checked = prefs.animationsEnabled,
-                    onCheckedChange = { viewModel.setAnimationsEnabled(it) },
+                    onCheckedChange = {
+                        haptics.confirm()
+                        viewModel.setAnimationsEnabled(it)
+                    },
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 ToggleRow(
                     title = "Haptic feedback",
                     subtitle = "Vibration on button presses and marking",
                     checked = prefs.hapticFeedback,
-                    onCheckedChange = { viewModel.setHapticFeedback(it) },
+                    onCheckedChange = {
+                        if (it) haptics.confirm()
+                        viewModel.setHapticFeedback(it)
+                    },
                 )
             }
 
@@ -206,7 +215,10 @@ fun SettingsScreen(
                     ALL_DAYS.forEach { day ->
                         FilterChip(
                             selected = selectedDays.contains(day),
-                            onClick = { viewModel.toggleWeekendDay(day) },
+                            onClick = {
+                                haptics.tap()
+                                viewModel.toggleWeekendDay(day)
+                            },
                             label = {
                                 Text(day.take(3).replaceFirstChar { it.uppercase() })
                             },
@@ -234,7 +246,10 @@ fun SettingsScreen(
                             listOf("Filled" to "filled", "Outlined" to "outlined", "Elevated" to "elevated").forEach { (label, value) ->
                                 FilterChip(
                                     selected = prefs.cardStyle == value,
-                                    onClick = { viewModel.setCardStyle(value) },
+                                    onClick = {
+                                        haptics.tap()
+                                        viewModel.setCardStyle(value)
+                                    },
                                     label = { Text(label) },
                                 )
                             }
@@ -261,7 +276,10 @@ fun SettingsScreen(
                         }
                         Switch(
                             checked = prefs.showPercentageOnCards,
-                            onCheckedChange = { viewModel.setShowPercentageOnCards(it) },
+                            onCheckedChange = {
+                                haptics.confirm()
+                                viewModel.setShowPercentageOnCards(it)
+                            },
                         )
                     }
 
@@ -285,7 +303,10 @@ fun SettingsScreen(
                         }
                         Switch(
                             checked = prefs.compactMode,
-                            onCheckedChange = { viewModel.setCompactMode(it) },
+                            onCheckedChange = {
+                                haptics.confirm()
+                                viewModel.setCompactMode(it)
+                            },
                         )
                     }
 
@@ -355,7 +376,10 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(CardShape)
-                        .clickable(onClick = onAbout)
+                        .clickable {
+                            haptics.tap()
+                            onAbout()
+                        }
                         .padding(vertical = 8.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
