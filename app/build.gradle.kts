@@ -89,6 +89,7 @@ dependencies {
 
     implementation(libs.material)
     implementation(libs.play.services.ads)
+    implementation(libs.m3color)
 
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)

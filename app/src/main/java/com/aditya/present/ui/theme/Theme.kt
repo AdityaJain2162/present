@@ -15,7 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import com.kyant.m3color.hct.Hct
+import com.kyant.m3color.scheme.SchemeMonochrome
+import com.kyant.m3color.scheme.SchemeNeutral
+import com.kyant.m3color.scheme.SchemeTonalSpot
 
 @Suppress("unused")
 private fun buildLightScheme(p: AccentPreset) = lightColorScheme(
@@ -42,6 +47,12 @@ private fun buildLightScheme(p: AccentPreset) = lightColorScheme(
     surfaceVariant = Color_SurfaceVariant,
     onSurfaceVariant = Color_OnSurfaceVariant,
     surfaceContainer = Color_SurfaceContainer,
+    surfaceContainerLow = Color_SurfaceContainerLow,
+    surfaceContainerLowest = Color_SurfaceContainerLowest,
+    surfaceContainerHigh = Color_SurfaceContainerHigh,
+    surfaceContainerHighest = Color_SurfaceContainerHighest,
+    surfaceBright = Color_SurfaceBright,
+    surfaceDim = Color_SurfaceDim,
 )
 
 @Suppress("unused")
@@ -69,7 +80,86 @@ private fun buildDarkScheme(p: AccentPreset) = darkColorScheme(
     surfaceVariant = Color_DarkSurfaceVariant,
     onSurfaceVariant = Color_DarkOnSurfaceVariant,
     surfaceContainer = Color_DarkSurfaceContainer,
+    surfaceContainerLow = Color_DarkSurfaceContainerLow,
+    surfaceContainerLowest = Color_DarkSurfaceContainerLowest,
+    surfaceContainerHigh = Color_DarkSurfaceContainerHigh,
+    surfaceContainerHighest = Color_DarkSurfaceContainerHighest,
+    surfaceBright = Color_DarkSurfaceBright,
+    surfaceDim = Color_DarkSurfaceDim,
 )
+
+private fun m3Scheme(seedColor: Color, isDark: Boolean, contrastLevel: Double = 0.0) =
+    Hct.fromInt(seedColor.toArgb()).let { hct ->
+        when {
+            hct.chroma < 4.0 -> SchemeMonochrome(hct, isDark, contrastLevel)
+            hct.chroma < 12.0 -> SchemeNeutral(hct, isDark, contrastLevel)
+            else -> SchemeTonalSpot(hct, isDark, contrastLevel)
+        }
+    }
+
+private fun Int.toComposeColor(): Color = Color(this.toLong() and 0xFFFFFFFFL)
+
+fun hctLightScheme(seed: Color): ColorScheme {
+    val s = m3Scheme(seed, isDark = false)
+    return lightColorScheme(
+        primary = s.primary.toComposeColor(),
+        onPrimary = s.onPrimary.toComposeColor(),
+        primaryContainer = s.primaryContainer.toComposeColor(),
+        onPrimaryContainer = s.onPrimaryContainer.toComposeColor(),
+        secondary = s.secondary.toComposeColor(),
+        onSecondary = s.onSecondary.toComposeColor(),
+        secondaryContainer = s.secondaryContainer.toComposeColor(),
+        onSecondaryContainer = s.onSecondaryContainer.toComposeColor(),
+        tertiary = s.tertiary.toComposeColor(),
+        onTertiary = s.onTertiary.toComposeColor(),
+        tertiaryContainer = s.tertiaryContainer.toComposeColor(),
+        onTertiaryContainer = s.onTertiaryContainer.toComposeColor(),
+        background = Color_Background,
+        onBackground = Color_OnBackground,
+        surface = Color_Surface,
+        onSurface = Color_OnSurface,
+        surfaceVariant = Color_SurfaceVariant,
+        onSurfaceVariant = Color_OnSurfaceVariant,
+        surfaceContainer = Color_SurfaceContainer,
+        surfaceContainerLow = Color_SurfaceContainerLow,
+        surfaceContainerLowest = Color_SurfaceContainerLowest,
+        surfaceContainerHigh = Color_SurfaceContainerHigh,
+        surfaceContainerHighest = Color_SurfaceContainerHighest,
+        surfaceBright = Color_SurfaceBright,
+        surfaceDim = Color_SurfaceDim,
+    )
+}
+
+fun hctDarkScheme(seed: Color): ColorScheme {
+    val s = m3Scheme(seed, isDark = true)
+    return darkColorScheme(
+        primary = s.primary.toComposeColor(),
+        onPrimary = s.onPrimary.toComposeColor(),
+        primaryContainer = s.primaryContainer.toComposeColor(),
+        onPrimaryContainer = s.onPrimaryContainer.toComposeColor(),
+        secondary = s.secondary.toComposeColor(),
+        onSecondary = s.onSecondary.toComposeColor(),
+        secondaryContainer = s.secondaryContainer.toComposeColor(),
+        onSecondaryContainer = s.onSecondaryContainer.toComposeColor(),
+        tertiary = s.tertiary.toComposeColor(),
+        onTertiary = s.onTertiary.toComposeColor(),
+        tertiaryContainer = s.tertiaryContainer.toComposeColor(),
+        onTertiaryContainer = s.onTertiaryContainer.toComposeColor(),
+        background = Color_DarkBackground,
+        onBackground = Color_DarkOnBackground,
+        surface = Color_DarkSurface,
+        onSurface = Color_DarkOnSurface,
+        surfaceVariant = Color_DarkSurfaceVariant,
+        onSurfaceVariant = Color_DarkOnSurfaceVariant,
+        surfaceContainer = Color_DarkSurfaceContainer,
+        surfaceContainerLow = Color_DarkSurfaceContainerLow,
+        surfaceContainerLowest = Color_DarkSurfaceContainerLowest,
+        surfaceContainerHigh = Color_DarkSurfaceContainerHigh,
+        surfaceContainerHighest = Color_DarkSurfaceContainerHighest,
+        surfaceBright = Color_DarkSurfaceBright,
+        surfaceDim = Color_DarkSurfaceDim,
+    )
+}
 
 val LocalAccentPreset = compositionLocalOf { AccentPresets[0] }
 val LocalAnimationsEnabled = compositionLocalOf { true }
@@ -110,11 +200,16 @@ fun PresentTheme(
                 surface = Color(0xFF000000),
                 surfaceVariant = Color(0xFF0A0A0A),
                 surfaceContainer = Color(0xFF111111),
+                surfaceContainerLow = Color(0xFF0D0D0D),
+                surfaceContainerLowest = Color(0xFF000000),
+                surfaceContainerHigh = Color(0xFF161616),
+                surfaceContainerHighest = Color(0xFF1A1A1A),
+                surfaceBright = Color(0xFF222222),
+                surfaceDim = Color(0xFF000000),
             )
         }
     }
 
-    // Animated color scheme — smooth spring transitions when accent/theme changes
     val animatedScheme = if (animationsEnabled) animateColorScheme(targetScheme) else targetScheme
 
     CompositionLocalProvider(

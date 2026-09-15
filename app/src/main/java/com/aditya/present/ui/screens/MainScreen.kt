@@ -1,6 +1,9 @@
 package com.aditya.present.ui.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,14 +15,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,9 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aditya.present.ui.navigation.Tab
@@ -50,7 +56,7 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            FloatingGlassNavBar(
+            FluidSlidingNavBar(
                 tabs = Tab.entries,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
@@ -84,7 +90,7 @@ fun MainScreen(
 }
 
 @Composable
-private fun FloatingGlassNavBar(
+private fun FluidSlidingNavBar(
     tabs: List<Tab>,
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
@@ -100,79 +106,75 @@ private fun FloatingGlassNavBar(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        Row(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
                 .background(barColor)
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
+                .height(64.dp),
         ) {
-            tabs.forEach { tab ->
-                NavItem(
-                    tab = tab,
-                    selected = selectedTab == tab,
-                    isDark = isDark,
-                    onClick = { onTabSelected(tab) },
-                )
-            }
-        }
-    }
-}
+            val tabWidth = maxWidth / tabs.size
+            val pillWidth = 48.dp
+            val pillHeight = 32.dp
 
-@Composable
-private fun androidx.compose.foundation.layout.RowScope.NavItem(
-    tab: Tab,
-    selected: Boolean,
-    isDark: Boolean,
-    onClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val indicatorAlpha = if (selected) 0.15f else 0f
-    val indicatorColor = if (isDark) Color.White else MaterialTheme.colorScheme.primary
+            val selectedIndex = tabs.indexOfFirst { it == selectedTab }.coerceAtLeast(0)
 
-    Column(
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
+            val indicatorOffset by animateDpAsState(
+                targetValue = (tabWidth * selectedIndex) + ((tabWidth - pillWidth) / 2),
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow,
+                ),
+                label = "PillSlider",
             )
-            .padding(vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .drawBehind {
-                    if (indicatorAlpha > 0f) {
-                        drawRoundRect(
-                            color = indicatorColor.copy(alpha = indicatorAlpha),
-                            cornerRadius = CornerRadius(16.dp.toPx()),
+
+            // Sliding pill indicator
+            Box(
+                modifier = Modifier
+                    .offset(x = indicatorOffset, y = 16.dp)
+                    .width(pillWidth)
+                    .height(pillHeight)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+            )
+
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                tabs.forEach { tab ->
+                    val isSelected = selectedTab == tab
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onTabSelected(tab) },
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
+                            contentDescription = tab.label,
+                            modifier = Modifier.size(22.dp),
+                            tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = tab.label,
+                            fontSize = 11.sp,
+                            color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
                     }
                 }
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
-                contentDescription = tab.label,
-                modifier = Modifier.size(24.dp),
-                tint = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            )
+            }
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = tab.label,
-            fontSize = 11.sp,
-            color = if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-        )
     }
 }
 

@@ -19,6 +19,7 @@ espresso = "3.6.1"
 testCore = "1.6.1"
 testExtJunit = "1.2.1"
 junit = "4.13.2"
+m3color = "2025.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +56,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+m3color = { group = "com.github.Kyant0", name = "m3color", version.ref = "m3color" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
