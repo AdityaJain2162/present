@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +54,7 @@ import com.aditya.present.domain.SessionType
 import com.aditya.present.ui.theme.CardShape
 import com.aditya.present.ui.theme.LocalAccentPreset
 import com.aditya.present.ui.theme.LocalAnimationsEnabled
+import com.aditya.present.ui.theme.LocalHaptics
 import com.aditya.present.ui.theme.primaryGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,8 +71,30 @@ fun OnboardingScreen(
     }
     val accentPreset = LocalAccentPreset.current
     val animations = LocalAnimationsEnabled.current
+    val haptics = LocalHaptics.current
 
     Scaffold { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Progress indicator
+            if (step > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    repeat(3) { i ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    if (i <= step) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                ),
+                        )
+                    }
+                }
+            }
         AnimatedContent(
             targetState = step,
             transitionSpec = {
@@ -79,17 +103,24 @@ fun OnboardingScreen(
                     slideOutHorizontally(tween(300)) { -it / 3 } + fadeOut(tween(200))
             },
             label = "onboarding",
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.weight(1f),
         ) { currentStep ->
             when (currentStep) {
-                0 -> WelcomeStep(onContinue = { step = 1 })
+                0 -> WelcomeStep(onContinue = {
+                    haptics.tap()
+                    step = 1
+                })
                 1 -> SessionTypeStep(
                     onSelected = {
+                        haptics.confirm()
                         sessionType = it
                         sessionName = if (it == SessionType.SEMESTER) "Semester 1" else "Year 1"
                         step = 2
                     },
-                    onBack = { step = 0 },
+                    onBack = {
+                        haptics.tap()
+                        step = 0
+                    },
                 )
                 2 -> SessionDetailsStep(
                     sessionType = sessionType ?: SessionType.SEMESTER,
@@ -100,6 +131,7 @@ fun OnboardingScreen(
                     onStartDateChange = { startDate = it },
                     onEndDateChange = { endDate = it },
                     onCreate = {
+                        haptics.confirm()
                         onSessionCreated(
                             sessionType ?: SessionType.SEMESTER,
                             sessionName.ifBlank { "Session 1" },
@@ -108,9 +140,13 @@ fun OnboardingScreen(
                             75f,
                         )
                     },
-                    onBack = { step = 1 },
+                    onBack = {
+                        haptics.tap()
+                        step = 1
+                    },
                 )
             }
+        }
         }
     }
 }
@@ -151,16 +187,60 @@ private fun WelcomeStep(onContinue: () -> Unit) {
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(modifier = Modifier.height(48.dp))
-        Text(
-            text = stringResource(R.string.onboarding_description),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Feature highlights
+        FeatureHighlightRow(
+            icon = "✓",
+            title = "Track Attendance",
+            desc = "Mark Present, Absent, Cancelled & more",
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        FeatureHighlightRow(
+            icon = "📅",
+            title = "Smart Calendar",
+            desc = "Monthly view with color-coded days",
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        FeatureHighlightRow(
+            icon = "🔒",
+            title = "100% Private",
+            desc = "No account, no cloud, fully offline",
         )
         Spacer(modifier = Modifier.height(48.dp))
         Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.onboarding_get_started), fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
+private fun FeatureHighlightRow(icon: String, title: String, desc: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = icon, style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                text = desc,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
