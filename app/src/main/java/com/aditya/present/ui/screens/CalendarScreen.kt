@@ -55,7 +55,7 @@ fun CalendarScreen(
     val haptics = LocalHaptics.current
     val uiState by viewModel.uiState.collectAsState()
 
-    var displayedMonth by remember { mutableStateOf(0) } // 0 = current month, -1 = prev, +1 = next
+    val displayedMonth by viewModel.monthOffset.collectAsState()
     val cal = remember(displayedMonth) {
         Calendar.getInstance().apply {
             add(Calendar.MONTH, displayedMonth)
@@ -74,7 +74,7 @@ fun CalendarScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = {
                             haptics.tap()
-                            displayedMonth--
+                            viewModel.setMonthOffset(displayedMonth - 1)
                         }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -89,7 +89,7 @@ fun CalendarScreen(
                         )
                         IconButton(onClick = {
                             haptics.tap()
-                            displayedMonth++
+                            viewModel.setMonthOffset(displayedMonth + 1)
                         }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -129,6 +129,7 @@ fun CalendarScreen(
                     LegendDot(Color(0xFFF44336), "Absent")
                     LegendDot(Color(0xFFFF9800), "Cancelled")
                     LegendDot(MaterialTheme.colorScheme.primary, "On Duty")
+                    LegendDot(Color(0xFF9C27B0), "Holiday")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -195,6 +196,7 @@ fun CalendarScreen(
                                                         "ABSENT" -> Color(0xFFF44336).copy(alpha = 0.15f)
                                                         "CANCELLED" -> Color(0xFFFF9800).copy(alpha = 0.15f)
                                                         "ON_DUTY" -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                                        "HOLIDAY" -> Color(0xFF9C27B0).copy(alpha = 0.15f)
                                                         else -> Color.Transparent
                                                     }
                                                 ),
@@ -209,6 +211,7 @@ fun CalendarScreen(
                                                     "ABSENT" -> Color(0xFFC62828)
                                                     "CANCELLED" -> Color(0xFFE65100)
                                                     "ON_DUTY" -> MaterialTheme.colorScheme.primary
+                                                    "HOLIDAY" -> Color(0xFF7B1FA2)
                                                     else -> if (isToday) MaterialTheme.colorScheme.primary
                                                     else MaterialTheme.colorScheme.onSurface
                                                 },
@@ -244,6 +247,7 @@ fun CalendarScreen(
                         val absent = uiState.attendanceByDay.values.count { it == "ABSENT" }
                         val cancelled = uiState.attendanceByDay.values.count { it == "CANCELLED" }
                         val onDuty = uiState.attendanceByDay.values.count { it == "ON_DUTY" }
+                        val holiday = uiState.attendanceByDay.values.count { it == "HOLIDAY" }
                         val total = present + absent
                         val pct = if (total > 0) (present * 100 / total) else 0
 
@@ -251,6 +255,7 @@ fun CalendarScreen(
                         SummaryRow("Absent", absent, Color(0xFFF44336))
                         SummaryRow("Cancelled", cancelled, Color(0xFFFF9800))
                         SummaryRow("On Duty", onDuty, MaterialTheme.colorScheme.primary)
+                        SummaryRow("Holiday", holiday, Color(0xFF9C27B0))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Attendance: $pct%",

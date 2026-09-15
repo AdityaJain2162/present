@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aditya.present.R
+import com.aditya.present.ui.theme.LocalHaptics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +46,12 @@ fun AddEditSubjectScreen(
     viewModel: AddEditSubjectViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val haptics = LocalHaptics.current
 
     LaunchedEffect(subjectId) {
-        // In a full implementation, load subject from repository by ID
+        if (subjectId != null) {
+            viewModel.loadSubjectById(subjectId)
+        }
     }
 
     LaunchedEffect(uiState.isSaved) {
@@ -114,7 +118,10 @@ fun AddEditSubjectScreen(
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(Color(color))
-                            .clickable { viewModel.updateColor(color) },
+                            .clickable {
+                                haptics.tap()
+                                viewModel.updateColor(color)
+                            },
                         contentAlignment = Alignment.Center,
                     ) {
                         if (uiState.color == color) {
@@ -134,7 +141,10 @@ fun AddEditSubjectScreen(
             )
 
             Button(
-                onClick = { viewModel.save(sessionId, subjectId) },
+                onClick = {
+                    haptics.confirm()
+                    viewModel.save(sessionId, subjectId)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState.name.isNotBlank(),
             ) {

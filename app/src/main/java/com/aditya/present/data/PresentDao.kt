@@ -74,4 +74,10 @@ interface PresentDao {
 
     @Query("SELECT * FROM attendance WHERE id = :id")
     suspend fun getAttendanceById(id: Long): AttendanceEntity?
+
+    @Query("DELETE FROM attendance WHERE id = :id")
+    suspend fun deleteAttendanceById(id: Long)
+
+    @Query("SELECT * FROM attendance WHERE subjectId = :subjectId AND date BETWEEN :start AND :end LIMIT 1")
+    suspend fun getAttendanceForSubjectOnDate(subjectId: Long, start: Long, end: Long): AttendanceEntity?
 }

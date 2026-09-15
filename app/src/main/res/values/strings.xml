@@ -45,4 +45,121 @@
     <string name="about_privacy_value">No analytics, no telemetry, no tracking. Your data never leaves your device.</string>
     <string name="about_license">License</string>
     <string name="about_license_value">MIT License</string>
+
+    <!-- Add/Edit Subject -->
+    <string name="add_subject_title">Add Subject</string>
+    <string name="edit_subject_title">Edit Subject</string>
+    <string name="subject_name_label">Subject name</string>
+    <string name="teacher_name_label">Teacher name (optional)</string>
+    <string name="acronym_preview">Acronym: %1$s</string>
+    <string name="color_label">Color</string>
+    <string name="color_selected">Selected</string>
+    <string name="target_attendance_label">Target attendance: %1$d%%</string>
+    <string name="save_subject">Save</string>
+    <string name="back">Back</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_tagline">Every class counts.</string>
+    <string name="onboarding_description">Track attendance, calculate safe bunks, manage your timetable, and never miss a deadline — all offline, no account needed.</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_track_question">How do you track attendance?</string>
+    <string name="onboarding_college_title">College / Semester</string>
+    <string name="onboarding_college_desc">Track attendance semester-wise with CGPA support</string>
+    <string name="onboarding_school_title">School / Yearly</string>
+    <string name="onboarding_school_desc">Track attendance for the full academic year</string>
+    <string name="onboarding_name_semester">Name your Semester</string>
+    <string name="onboarding_name_year">Name your Year</string>
+    <string name="onboarding_semester_name">Semester name</string>
+    <string name="onboarding_year_name">Year name</string>
+    <string name="onboarding_start_date">Start: %1$s</string>
+    <string name="onboarding_end_date">End: %1$s</string>
+    <string name="onboarding_target_hint">Target attendance: 75%%\n(You can change these later in Settings)</string>
+    <string name="onboarding_create_semester">Create Semester</string>
+    <string name="onboarding_create_year">Create Year</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Attendance Mark Sheet -->
+    <string name="mark_today_attendance">Mark today\'s attendance</string>
+    <string name="status_present">Present</string>
+    <string name="status_absent">Absent</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_holiday">Holiday</string>
+    <string name="status_on_duty">On Duty</string>
+    <string name="mark_as_present">Mark as present</string>
+    <string name="mark_as_absent">Mark as absent</string>
+    <string name="mark_as_cancelled">Mark as cancelled</string>
+    <string name="mark_as_on_duty">Mark as on duty</string>
+
+    <!-- Calendar -->
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_month_summary">Month Summary</string>
+    <string name="calendar_attendance_pct">Attendance: %1$d%%</string>
+    <string name="calendar_no_session">No active session</string>
+
+    <!-- Timetable -->
+    <string name="timetable_title">Timetable</string>
+    <string name="timetable_add_slot">Add Slot</string>
+    <string name="timetable_no_subjects">No subjects yet</string>
+    <string name="timetable_no_subjects_desc">Add a subject first from the Home tab, then come back to create your timetable.</string>
+    <string name="timetable_no_classes">No classes on %1$s</string>
+    <string name="timetable_no_classes_desc">Tap \"Add Slot\" to schedule a class for this day. Swipe cards left/right to mark attendance.</string>
+    <string name="timetable_add_class_slot">Add Class Slot</string>
+    <string name="timetable_day_label">Day: %1$s</string>
+    <string name="timetable_subject">Subject</string>
+    <string name="timetable_select">Select</string>
+    <string name="timetable_units">%1$d units</string>
+    <string name="timetable_until">until %1$s</string>
+    <string name="timetable_select_day">Select %1$s</string>
+    <string name="timetable_marked_status">%1$s at %2$s. Marked %3$s.</string>
+    <string name="timetable_swipe_hint">%1$s at %2$s. Swipe right for present, left for absent.</string>
+
+    <!-- Home -->
+    <string name="home_no_session">No session</string>
+    <string name="home_switch_session">Switch session</string>
+    <string name="home_active_session">%1$s (active)</string>
+    <string name="home_welcome_title">Welcome to Present!</string>
+    <string name="home_welcome_subtitle">Add your first subject to start tracking attendance and never worry about falling below your target again.</string>
+    <string name="home_add_first_subject">Add Your First Subject</string>
+    <string name="home_add_subject_cd">Add subject</string>
+    <string name="home_period_overall">Overall</string>
+    <string name="home_period_monthly">Monthly</string>
+    <string name="home_period_weekly">Weekly</string>
+    <string name="home_period_this_month">This Month</string>
+    <string name="home_period_this_week">This Week</string>
+    <string name="home_period_label_overall">Overall</string>
+    <string name="home_period_label">%1$s: %2$d%%</string>
+    <string name="home_subject_count">%1$d subject • Tap a subject to mark attendance</string>
+    <string name="home_subject_count_plural">%1$d subjects • Tap a subject to mark attendance</string>
+    <string name="home_undo">UNDO</string>
+    <string name="home_marked_status">%1$s marked %2$s</string>
+
+    <!-- Subject Card -->
+    <string name="subject_card_target">Target: %1$d%%</string>
+    <string name="subject_card_attended">Attended: %1$d / %2$d classes</string>
+    <string name="subject_card_can_skip">Can safely skip %1$d more classes</string>
+    <string name="subject_card_must_attend">Attend next %1$d classes to reach target</string>
+    <string name="subject_card_collapse">Collapse</string>
+    <string name="subject_card_expand">Expand</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_accent_color_title">Accent Color</string>
+    <string name="settings_dynamic_color_short">Dynamic color</string>
+    <string name="settings_dynamic_color_short_desc">Android 12+ — blends with wallpaper</string>
+    <string name="settings_behavior">Behavior</string>
+    <string name="settings_smooth_animations">Smooth animations</string>
+    <string name="settings_smooth_animations_desc">Transitions, spring motion, staggered lists</string>
+    <string name="settings_haptic_feedback">Haptic Feedback</string>
+    <string name="settings_haptic_feedback_desc">Vibrate on taps and actions</string>
+    <string name="settings_attendance_defaults">Attendance Defaults</string>
+    <string name="settings_default_target">Default target: %1$d%%</string>
+    <string name="settings_auto_mark_time">Auto-mark time: %1$d:00</string>
+    <string name="settings_auto_mark_desc">Unmarked classes auto-mark as Present at this hour</string>
+    <string name="settings_weekend_days">Weekend Days</string>
+    <string name="settings_weekend_desc">These days are auto-excluded from attendance</string>
+    <string name="settings_haptic_intensity">Haptic Intensity</string>
+    <string name="settings_haptic_intensity_desc">How strong the vibration feels</string>
+    <string name="settings_about_desc_full">Developer info, links, privacy, license</string>
 </resources>

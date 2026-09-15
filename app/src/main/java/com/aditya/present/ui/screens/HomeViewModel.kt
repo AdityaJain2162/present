@@ -44,6 +44,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _lastMarked = MutableStateFlow<Pair<String, AttendanceStatus>?>(null)
+    private val _lastMarkedId = MutableStateFlow<Long?>(null)
 
     @Suppress("OPT_IN_USAGE")
     val uiState: StateFlow<HomeUiState> = repository.getActiveSession()
@@ -70,12 +71,14 @@ class HomeViewModel @Inject constructor(
                             // Combine attendance flows for all subjects
                             val statsFlows = subjects.map { subject ->
                                 repository.getAttendanceForSubject(subject.id).map { entries ->
+                                    // Per AGENTS.md: totalUnits = PRESENT + ABSENT
+                                    // (CANCELLED/HOLIDAY/ON_DUTY excluded)
                                     val attended = entries.count {
-                                        it.status == AttendanceStatus.PRESENT.name ||
-                                            it.status == AttendanceStatus.ON_DUTY.name
+                                        it.status == AttendanceStatus.PRESENT.name
                                     }
                                     val total = entries.count {
-                                        it.status != AttendanceStatus.CANCELLED.name
+                                        it.status == AttendanceStatus.PRESENT.name ||
+                                            it.status == AttendanceStatus.ABSENT.name
                                     }
                                     val pct = if (total > 0) attended.toFloat() / total else 0f
                                     val todayEntry = entries.find {
@@ -118,12 +121,22 @@ class HomeViewModel @Inject constructor(
     fun markAttendance(subjectId: Long, status: AttendanceStatus, subjectName: String) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            repository.insertAttendance(
+            val id = repository.upsertAttendance(
                 subjectId = subjectId,
                 date = now,
                 status = status,
             )
+            _lastMarkedId.value = id
             _lastMarked.value = subjectName to status
+        }
+    }
+
+    fun undoLastMarked() {
+        val id = _lastMarkedId.value ?: return
+        viewModelScope.launch {
+            repository.deleteAttendanceById(id)
+            _lastMarkedId.value = null
+            _lastMarked.value = null
         }
     }
 

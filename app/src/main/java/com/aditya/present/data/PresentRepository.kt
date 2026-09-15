@@ -108,6 +108,63 @@ class PresentRepository @Inject constructor(
 
     suspend fun updateAttendance(entry: AttendanceEntity) = dao.updateAttendance(entry)
     suspend fun deleteAttendance(entry: AttendanceEntity) = dao.deleteAttendance(entry)
+    suspend fun deleteAttendanceById(id: Long) = dao.deleteAttendanceById(id)
+
+    /**
+     * Upsert attendance: if an entry exists for this subject on this date,
+     * update it; otherwise insert a new one. Prevents duplicate entries.
+     * Returns the ID of the inserted/updated entry.
+     */
+    suspend fun upsertAttendance(
+        subjectId: Long,
+        date: Long,
+        status: AttendanceStatus,
+        units: Int = 1,
+        slotId: Long? = null,
+        isAuto: Boolean = false,
+    ): Long {
+        val startOfDay = startOfDay(date)
+        val endOfDay = endOfDay(date)
+        val existing = dao.getAttendanceForSubjectOnDate(subjectId, startOfDay, endOfDay)
+        return if (existing != null) {
+            val updated = existing.copy(status = status.name, units = units, slotId = slotId, isAuto = isAuto)
+            dao.updateAttendance(updated)
+            existing.id
+        } else {
+            dao.insertAttendance(
+                AttendanceEntity(
+                    subjectId = subjectId,
+                    date = date,
+                    slotId = slotId,
+                    status = status.name,
+                    units = units,
+                    isAuto = isAuto,
+                )
+            )
+        }
+    }
+
+    private fun startOfDay(timestamp: Long): Long {
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
+
+    private fun endOfDay(timestamp: Long): Long {
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(java.util.Calendar.HOUR_OF_DAY, 23)
+            set(java.util.Calendar.MINUTE, 59)
+            set(java.util.Calendar.SECOND, 59)
+            set(java.util.Calendar.MILLISECOND, 999)
+        }
+        return cal.timeInMillis
+    }
 
     // Stats
     fun getSubjectsWithStats(sessionId: Long): Flow<List<SubjectWithStats>> =

@@ -46,6 +46,13 @@ class AddEditSubjectViewModel @Inject constructor(
         }
     }
 
+    fun loadSubjectById(subjectId: Long) {
+        viewModelScope.launch {
+            val subject = repository.getSubjectById(subjectId) ?: return@launch
+            loadSubjectForEdit(subject)
+        }
+    }
+
     fun updateName(name: String) {
         _uiState.update {
             it.copy(name = name, acronym = AcronymGenerator.generate(name))
