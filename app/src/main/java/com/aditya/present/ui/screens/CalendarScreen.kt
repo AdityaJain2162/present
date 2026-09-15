@@ -292,11 +292,11 @@ fun CalendarScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         val allEntries = uiState.attendanceByDay.values.flatten()
-                        val present = allEntries.count { it.status == "PRESENT" }
-                        val absent = allEntries.count { it.status == "ABSENT" }
-                        val cancelled = allEntries.count { it.status == "CANCELLED" }
-                        val onDuty = allEntries.count { it.status == "ON_DUTY" }
-                        val holiday = allEntries.count { it.status == "HOLIDAY" }
+                        val present = allEntries.filter { it.status == "PRESENT" }.sumOf { it.units }
+                        val absent = allEntries.filter { it.status == "ABSENT" }.sumOf { it.units }
+                        val cancelled = allEntries.filter { it.status == "CANCELLED" }.sumOf { it.units }
+                        val onDuty = allEntries.filter { it.status == "ON_DUTY" }.sumOf { it.units }
+                        val holiday = allEntries.filter { it.status == "HOLIDAY" }.sumOf { it.units }
                         val total = present + absent
                         val pct = if (total > 0) (present * 100 / total) else 0
 

@@ -182,7 +182,11 @@ class TimetableViewModel @Inject constructor(
     fun markAttendance(subjectId: Long, slotId: Long, status: AttendanceStatus) {
         viewModelScope.launch {
             markMutex.withLock {
-                repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, slotId = slotId)
+                // Look up the slot to get its unit count
+                val allSlots = repository.getAllSlots()
+                val slot = allSlots.find { it.id == slotId }
+                val units = slot?.units ?: 1
+                repository.upsertAttendance(subjectId, System.currentTimeMillis(), status, units = units, slotId = slotId)
             }
         }
     }

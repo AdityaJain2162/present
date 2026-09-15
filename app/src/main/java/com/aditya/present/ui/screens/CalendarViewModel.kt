@@ -28,6 +28,7 @@ data class DayEntry(
 data class CalendarDayStatus(
     val status: String,
     val subjectColor: Int,
+    val units: Int = 1,
 )
 
 data class CalendarUiState(
@@ -89,6 +90,7 @@ class CalendarViewModel @Inject constructor(
                                     CalendarDayStatus(
                                         status = entry.status,
                                         subjectColor = subjects[entry.subjectId]?.color ?: 0xFF9E9E9E.toInt(),
+                                        units = entry.units,
                                     )
                                 }
                             }

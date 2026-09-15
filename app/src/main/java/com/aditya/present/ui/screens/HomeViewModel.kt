@@ -87,13 +87,14 @@ class HomeViewModel @Inject constructor(
                                 repository.getAttendanceForSubject(subject.id).map { entries ->
                                     // Per AGENTS.md: totalUnits = PRESENT + ABSENT
                                     // (CANCELLED/HOLIDAY/ON_DUTY excluded)
-                                    val attended = entries.count {
+                                    // Sum the units field so multi-unit classes count correctly
+                                    val attended = entries.filter {
                                         it.status == AttendanceStatus.PRESENT.name
-                                    }
-                                    val total = entries.count {
+                                    }.sumOf { it.units }
+                                    val total = entries.filter {
                                         it.status == AttendanceStatus.PRESENT.name ||
                                             it.status == AttendanceStatus.ABSENT.name
-                                    }
+                                    }.sumOf { it.units }
                                     val pct = if (total > 0) attended.toFloat() / total else 0f
                                     val todayEntry = entries.find {
                                         it.date in startOfToday..endOfToday
@@ -122,27 +123,27 @@ class HomeViewModel @Inject constructor(
                                 val weekStart = getStartOfWeek()
                                 val monthStart = getStartOfMonth()
 
-                                val overallAttended = allEntries.count {
+                                val overallAttended = allEntries.filter {
                                     it.status == AttendanceStatus.PRESENT.name
-                                }
-                                val overallTotal = allEntries.count {
+                                }.sumOf { it.units }
+                                val overallTotal = allEntries.filter {
                                     it.status == AttendanceStatus.PRESENT.name ||
                                         it.status == AttendanceStatus.ABSENT.name
-                                }
-                                val monthlyAttended = allEntries.filter { it.date >= monthStart }.count {
+                                }.sumOf { it.units }
+                                val monthlyAttended = allEntries.filter { it.date >= monthStart }.filter {
                                     it.status == AttendanceStatus.PRESENT.name
-                                }
-                                val monthlyTotal = allEntries.filter { it.date >= monthStart }.count {
+                                }.sumOf { it.units }
+                                val monthlyTotal = allEntries.filter { it.date >= monthStart }.filter {
                                     it.status == AttendanceStatus.PRESENT.name ||
                                         it.status == AttendanceStatus.ABSENT.name
-                                }
-                                val weeklyAttended = allEntries.filter { it.date >= weekStart }.count {
+                                }.sumOf { it.units }
+                                val weeklyAttended = allEntries.filter { it.date >= weekStart }.filter {
                                     it.status == AttendanceStatus.PRESENT.name
-                                }
-                                val weeklyTotal = allEntries.filter { it.date >= weekStart }.count {
+                                }.sumOf { it.units }
+                                val weeklyTotal = allEntries.filter { it.date >= weekStart }.filter {
                                     it.status == AttendanceStatus.PRESENT.name ||
                                         it.status == AttendanceStatus.ABSENT.name
-                                }
+                                }.sumOf { it.units }
 
                                 val streakStats = StreakCalculator.calculate(allEntries)
                                 val trendData = computeTrendData(allEntries)
@@ -186,13 +187,14 @@ class HomeViewModel @Inject constructor(
                 val todaySlots = repository.getSlotsForSubjectOnDay(subjectId, todayDayOfWeek)
 
                 if (todaySlots.isNotEmpty()) {
-                    // Mark each slot for today
+                    // Mark each slot for today, passing the slot's unit count
                     var lastId: Long? = null
                     for (slot in todaySlots) {
                         lastId = repository.upsertAttendance(
                             subjectId = subjectId,
                             date = now,
                             status = status,
+                            units = slot.units,
                             slotId = slot.id,
                         )
                     }
@@ -293,10 +295,10 @@ class HomeViewModel @Inject constructor(
             val dayStart = today - i * dayMs
             val dayEnd = dayStart + dayMs - 1
             val dayEntries = entries.filter { it.date in dayStart..dayEnd }
-            val attended = dayEntries.count { it.status == AttendanceStatus.PRESENT.name }
-            val total = dayEntries.count {
+            val attended = dayEntries.filter { it.status == AttendanceStatus.PRESENT.name }.sumOf { it.units }
+            val total = dayEntries.filter {
                 it.status == AttendanceStatus.PRESENT.name || it.status == AttendanceStatus.ABSENT.name
-            }
+            }.sumOf { it.units }
             trend.add(if (total > 0) attended.toFloat() / total else 0f)
         }
         return trend
