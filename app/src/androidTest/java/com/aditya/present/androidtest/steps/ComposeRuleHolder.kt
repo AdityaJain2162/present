@@ -1,53 +1,34 @@
 package com.aditya.present.androidtest.steps
 
 import android.util.Log
-import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.room.Room
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.aditya.present.MainActivity
 import com.aditya.present.data.PresentDatabase
 import io.cucumber.java.After
 import io.cucumber.java.Before
+import io.cucumber.junit.WithJunitRule
 import kotlinx.coroutines.CoroutineExceptionHandler
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.util.ServiceLoader
 
 class ComposeRuleHolder {
 
-    private var _composeRule: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity>? = null
-
-    val composeRule: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity>
-        get() = _composeRule ?: throw IllegalStateException("composeRule not initialized")
+    @field:WithJunitRule
+    val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setUp() {
         Thread.currentThread().contextClassLoader = javaClass.classLoader
         fixCoroutineExceptionHandlers()
         clearDatabase()
-
-        // Manually create and apply the Compose rule on the Cucumber thread
-        // so the ComposeRootRegistry (thread-local) is set up for step definitions.
-        val activityRule = ActivityScenarioRule(MainActivity::class.java)
-        _composeRule = AndroidComposeTestRule(
-            activityRule = activityRule,
-            activityProvider = { activityRule.scenario.getActivity()!! },
-        )
-        val statement = object : Statement() { override fun evaluate() {} }
-        val description = Description.createSuiteDescription("PresentCucumber")
-        _composeRule!!.apply(statement, description).evaluate()
-        Log.i("PresentCucumber", "Compose rule applied on thread: ${Thread.currentThread().name}")
+        // Don't call waitForIdle() here — @WithJunitRule handles setup.
+        // Step definitions will call waitForIdle() as needed.
     }
 
     @After
     fun tearDown() {
-        try {
-            _composeRule?.activityRule?.scenario?.close()
-        } catch (e: Exception) {
-            Log.e("PresentCucumber", "tearDown failed", e)
-        }
-        _composeRule = null
+        // Activity is managed by the rule
     }
 
     private fun fixCoroutineExceptionHandlers() {

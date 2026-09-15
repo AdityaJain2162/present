@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aditya.present.data.SubjectEntity
 import com.aditya.present.domain.AttendanceStatus
@@ -138,6 +139,8 @@ private fun SubjectCardContent(
                         style = if (compact) MaterialTheme.typography.titleSmall
                         else MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = buildString {
@@ -149,6 +152,8 @@ private fun SubjectCardContent(
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }

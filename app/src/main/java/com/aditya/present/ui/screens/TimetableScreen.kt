@@ -68,6 +68,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -427,12 +428,16 @@ private fun SwipeableTimetableCard(
                         text = subject.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     if (subject.teacherName.isNotBlank()) {
                         Text(
                             text = subject.teacherName,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                     if (units > 1) {
@@ -581,7 +586,11 @@ private fun AddSlotDialog(
                                                 .background(Color(subject.color)),
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(subject.name)
+                                        Text(
+                                            text = subject.name,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
                                     }
                                 },
                                 onClick = {
