@@ -32,12 +32,23 @@ class AutoMarkReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val dao = PresentDatabase.get(context).dao()
+                val themeRepo = com.aditya.present.data.ThemeRepository(context)
+                val prefs = themeRepo.themePrefs.first()
                 val today = Calendar.getInstance()
                 val startOfDay = startOfDay(today)
                 val endOfDay = endOfDay(today)
 
                 // Get today's day of week
                 val dayOfWeek = today.get(Calendar.DAY_OF_WEEK)
+
+                // Skip weekends — no classes to auto-mark
+                val todayName = dayName(dayOfWeek)
+                val weekendDays = prefs.weekendDays.split(",").filter { it.isNotBlank() }.toSet()
+                if (todayName in weekendDays) {
+                    // Still schedule next day's alarm
+                    AlarmScheduler.scheduleAutoMark(context, prefs.autoMarkHour)
+                    return@launch
+                }
 
                 // Get all slots for today
                 val slots = dao.getSlotsForDay(dayOfWeek).first()
@@ -68,8 +79,6 @@ class AutoMarkReceiver : BroadcastReceiver() {
                 }
 
                 // Schedule next day's auto-mark
-                val themeRepo = com.aditya.present.data.ThemeRepository(context)
-                val prefs = themeRepo.themePrefs.first()
                 AlarmScheduler.scheduleAutoMark(context, prefs.autoMarkHour)
             } finally {
                 pendingResult.finish()
@@ -115,6 +124,19 @@ class AutoMarkReceiver : BroadcastReceiver() {
         c.set(Calendar.SECOND, 59)
         c.set(Calendar.MILLISECOND, 999)
         return c.timeInMillis
+    }
+
+    private fun dayName(dayOfWeek: Int): String {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> "SUNDAY"
+            Calendar.MONDAY -> "MONDAY"
+            Calendar.TUESDAY -> "TUESDAY"
+            Calendar.WEDNESDAY -> "WEDNESDAY"
+            Calendar.THURSDAY -> "THURSDAY"
+            Calendar.FRIDAY -> "FRIDAY"
+            Calendar.SATURDAY -> "SATURDAY"
+            else -> ""
+        }
     }
 
     companion object {
